@@ -26,17 +26,11 @@
         </activity>
         <activity
             android:name=".screen.SigninActivity"
-            android:exported="false">
-            <meta-data
-                android:name="android.app.lib_name"
-                android:value="" />
+            android:exported="true">
         </activity>
         <activity
             android:name=".screen.SignupActivity"
-            android:exported="false">
-            <meta-data
-                android:name="android.app.lib_name"
-                android:value="" />
+            android:exported="true">
         </activity>
     </application>
 
