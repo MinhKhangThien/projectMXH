@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "629132903118",
-    "project_id": "project-mxh-678bf",
-    "storage_bucket": "project-mxh-678bf.firebasestorage.app"
+    "project_number": "806234401502",
+    "project_id": "mxh-app-19886",
+    "storage_bucket": "mxh-app-19886.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:629132903118:android:659baac9b0e29230d0c69f",
+        "mobilesdk_app_id": "1:806234401502:android:ee028c883d1ba70964304f",
         "android_client_info": {
           "package_name": "com.example.projectmxh"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDdisvpzZlM1tZWJ7JaQvqFmSGX4_yu5Jc"
+          "current_key": "AIzaSyBUFB9Lf5xNPJndldp0B8CqDlTfJOXLsh8"
         }
       ],
       "services": {
