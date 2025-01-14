@@ -63,17 +63,18 @@
                 android:layout_marginTop="16dp" />
 
             <!-- Trường Email -->
+
+            <!-- Trường Password -->
             <EditText
                 android:id="@+id/et_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Email"
-                android:padding="12dp"
-                android:background="@drawable/rounded_edittext"
                 android:layout_marginBottom="16dp"
-                android:inputType="textEmailAddress" />
+                android:background="@drawable/rounded_edittext"
+                android:hint="Email"
+                android:inputType="textEmailAddress"
+                android:padding="12dp" />
 
-            <!-- Trường Password -->
             <EditText
                 android:id="@+id/et_password"
                 android:layout_width="match_parent"
