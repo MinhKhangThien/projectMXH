@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".MainActivity">
+
+    <!-- Header với logo và icon gửi -->
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/logoIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/logo"
+            android:contentDescription="Logo"
+            android:layout_marginEnd="16dp" />
+
+        <TextView
+            android:id="@+id/socialText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Social"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginEnd="16dp"
+            android:gravity="center_vertical" />
+
+        <!-- Spacer -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/messageIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_send"
+            android:contentDescription="Message Icon" />
+    </LinearLayout>
+
+    <!-- Nút soạn tin ở giữa -->
+    <LinearLayout
+        android:id="@+id/new_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/header"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/ic_write"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_write"
+            android:contentDescription="Write Icon" />
+
+        <TextView
+            android:id="@+id/new_message_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Message"
+            android:textSize="16sp"
+            android:layout_marginStart="8dp"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <!-- Danh sách tin nhắn -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/messages_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/new_message"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:padding="8dp" />
+</RelativeLayout>

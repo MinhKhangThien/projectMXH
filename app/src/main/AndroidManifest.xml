@@ -38,6 +38,14 @@
             android:name=".screen.ProfileActivity"
             android:exported="true">
         </activity>
+        <activity
+            android:name=".screen.ChatActivity"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".screen.MessageActivity"
+            android:exported="true">
+        </activity>
     </application>
 
 </manifest>
