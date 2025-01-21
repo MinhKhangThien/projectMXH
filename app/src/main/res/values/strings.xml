@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">projectMXH</string>
+    <string name="send_comment">Send comment</string>
+    <string name="post_image">Post Image</string>
+    <string name="author_avatar">Author Avatar</string>
+    <string name="more_options">More Options</string>
+    <string name="like_button">Like Button</string>
+    <string name="comment_button">Comment Button</string>
+    <string name="save_button">Save Button</string>
+    <string-array name="privacy_options">
+        <item>Public</item>
+        <item>Friends</item>
+        <item>Only me</item>
+    </string-array>
 </resources>
