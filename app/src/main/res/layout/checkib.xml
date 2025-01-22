@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="#F0F0F0">
+
+    <TextView
+        android:id="@+id/logo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="Social"
+        android:layout_centerHorizontal="true"
+        android:textColor="#000000"
+        android:drawableLeft="@drawable/logo"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp" />
+
+    <ImageView
+        android:id="@+id/ic_check"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_below="@id/logo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/ic_check" />
+
+    <TextView
+        android:id="@+id/check_inbox_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ic_check"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:text="Check your inbox!"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#000000" />
+
+    <TextView
+        android:id="@+id/message_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/check_inbox_text"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:text="Simply open your inbox and click the link to access your account. No passwords required!"
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:textColor="#000000" />
+
+    <Button
+        android:id="@+id/verify_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/message_subtitle"
+        android:layout_marginTop="20dp"
+        android:text="Done"
+        android:background="@drawable/round_button_colormain"
+        android:textColor="#FFFFFF" />
+</RelativeLayout>
