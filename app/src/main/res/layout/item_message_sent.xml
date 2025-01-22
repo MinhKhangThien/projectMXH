@@ -3,16 +3,26 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:gravity="end"
+    android:gravity="start"
     android:padding="8dp">
 
     <TextView
         android:id="@+id/messageText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/message_sent_background"
+        android:background="@drawable/message_received_background"
         android:padding="10dp"
-        android:textColor="@android:color/white"
-        android:text="Tin nhắn gửi"
+        android:textColor="@android:color/black"
+        android:text="Tin nhắn nhận"
         android:textSize="16sp" />
+
+    <!-- ImageView cho trạng thái typing -->
+    <ImageView
+        android:id="@+id/typingIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_typing"
+        android:visibility="gone"
+        android:contentDescription="Typing Icon" />
 </LinearLayout>
