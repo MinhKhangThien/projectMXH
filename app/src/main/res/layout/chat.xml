@@ -61,6 +61,14 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:src="@drawable/ic_videocall"
+            android:contentDescription="Video Call Icon"
+            android:layout_marginEnd="16dp"/>
+
+        <ImageView
+            android:id="@+id/detail"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_3gach"
             android:contentDescription="Video Call Icon" />
     </LinearLayout>
 

@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.projectmxh.HomeFragment;
 import com.example.projectmxh.MainActivity;
 import com.example.projectmxh.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -44,7 +45,7 @@ public class SigninActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), MessageActivity.class);
+                Intent intent = new Intent(getApplicationContext(), DetailChatActivity.class);
                 startActivity(intent);
                 finish();
             }
