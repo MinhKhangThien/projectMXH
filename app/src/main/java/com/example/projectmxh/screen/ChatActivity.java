@@ -22,8 +22,8 @@ public class ChatActivity extends AppCompatActivity {
         // Tạo danh sách tin nhắn
         List<Message> messages = new ArrayList<>();
         messages.add(new Message("Hello!", true));  // Tin nhắn gửi
-        messages.add(new Message("Hi, how are you?", false));  // Tin nhắn nhận
-        messages.add(new Message("Khỏe", true));  // Tin nhắn gửi
+        messages.add(new Message("Hi, khỏe không you?", false));  // Tin nhắn nhận
+        messages.add(new Message("Khỏe chứ bro", true));  // Tin nhắn gửi
         messages.add(new Message("OK", false));  // Tin nhắn nhận
         // Khởi tạo Adapter
         ChatAdapter chatAdapter = new ChatAdapter(messages);
