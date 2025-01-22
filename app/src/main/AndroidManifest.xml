@@ -15,37 +15,76 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ProjectMXH"
+        android:theme="@style/Theme.AppCompat"
         tools:targetApi="31">
+
         <activity
             android:name=".screen.SigninActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--Trang chủ/ Xài activity nào của t thì đổi sang theme Material3 nha, của m là AppCompat-->
+        <activity
+            android:name=".BaseActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Material3">
+        </activity>
+
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat">
         </activity>
+
         <activity
             android:name=".screen.SignupActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat">
         </activity>
+
         <activity
             android:name=".screen.ProfileActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat">
         </activity>
+
         <activity
             android:name=".screen.ChatActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat">
         </activity>
+
         <activity
             android:name=".screen.MessageActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat">
         </activity>
+
+        <activity
+            android:name=".CreatePostActivity"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.Material3" />
+
+        <activity
+            android:name=".CommentActivity"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.Material3" />
+
+        <activity
+            android:name=".NotificationsActivity"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.AppCompat" />
+
+        <activity
+            android:name=".MenuActivity"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.AppCompat" />
+
     </application>
 
 </manifest>
