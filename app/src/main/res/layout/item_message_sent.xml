@@ -15,4 +15,5 @@
         android:textColor="@android:color/white"
         android:text="Tin nhắn gửi"
         android:textSize="16sp" />
+
 </LinearLayout>

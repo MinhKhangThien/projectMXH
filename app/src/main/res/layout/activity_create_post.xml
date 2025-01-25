@@ -33,6 +33,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_marginEnd="16dp"
+                    android:background="@drawable/round_button_colormain"
                     android:text="Post"
                     app:cornerRadius="20dp"/>
             </RelativeLayout>
@@ -51,7 +52,7 @@
             android:padding="16dp">
 
             <!-- Profile Section -->
-            <de.hdodenhof.circleimageview.CircleImageView
+            <ImageView
                 android:id="@+id/profileImage"
                 android:layout_width="40dp"
                 android:layout_height="40dp"

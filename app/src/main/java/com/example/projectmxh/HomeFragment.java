@@ -30,9 +30,6 @@ import com.example.projectmxh.service.ApiService;
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class HomeFragment extends Fragment implements PostAdapter.PostClickListener {
     private RecyclerView postsRecyclerView;
