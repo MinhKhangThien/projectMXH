@@ -21,7 +21,7 @@
             android:gravity="center_vertical">
 
             <!-- Avatar -->
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/avatarImage"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -47,13 +47,15 @@
             android:orientation="vertical"
             android:gravity="center_vertical">
 
-            <ImageView
-                android:id="@+id/moreIcon"
+            <ImageButton
+                android:id="@+id/moreButton"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_more"
                 android:contentDescription="More Options"
-                android:layout_gravity="end" />
+                android:layout_gravity="end"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:focusable="true"/>
             <!-- Time -->
             <TextView
                 android:id="@+id/timeText"
@@ -75,6 +77,15 @@
         android:textColor="@color/black"
         android:layout_marginTop="20dp" />
 
+    <!-- Post Image - Full Width -->
+    <ImageView
+        android:id="@+id/postImage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:contentDescription="@string/post_image"/>
+
     <!-- Likes and Comments Section -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -89,12 +100,12 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/commentIcon"
+            <ImageButton
+                android:id="@+id/commentButton"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginEnd="8dp"
-                android:contentDescription="Comment Icon"
+                android:contentDescription="Comment Botton"
                 android:src="@drawable/ic_comment" />
 
             <TextView
@@ -126,8 +137,8 @@
                 android:text="270 Likes"
                 android:textSize="14sp" />
 
-            <ImageView
-                android:id="@+id/likeIcon"
+            <ImageButton
+                android:id="@+id/likeButton"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:contentDescription="Like Icon"
