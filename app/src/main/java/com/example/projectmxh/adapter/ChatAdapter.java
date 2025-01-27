@@ -1,6 +1,8 @@
 package com.example.projectmxh.adapter;
 
 import com.example.projectmxh.Model.Message;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.projectmxh.R;
+import com.google.gson.Gson;
 
 import java.util.List;
 
@@ -16,21 +19,30 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int VIEW_TYPE_SENT = 1;
     private static final int VIEW_TYPE_RECEIVED = 2;
 
-    private List<Message> messages;
+    private final List<Message> messages;
+    private final String currentUser;
 
-    public ChatAdapter(List<Message> messages) {
+    public ChatAdapter(List<Message> messages, String currentUser) {
         this.messages = messages;
+        this.currentUser = currentUser;
     }
 
     @Override
     public int getItemViewType(int position) {
-        // Phân loại tin nhắn gửi hay nhận
-        return messages.get(position).isSentByUser() ? VIEW_TYPE_SENT : VIEW_TYPE_RECEIVED;
+        Message message = messages.get(position);
+        Log.d("ChatAdapter", "Message sender: " + message.getSenderName() +
+                ", current user: " + currentUser);
+        if (message.getSenderName() != null && message.getSenderName().equals(currentUser)) {
+            return VIEW_TYPE_SENT;
+        } else {
+            return VIEW_TYPE_RECEIVED;
+        }
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        Log.d("ChatAdapter", "Creating ViewHolder for viewType: " + viewType);
         if (viewType == VIEW_TYPE_SENT) {
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_message_sent, parent, false);
@@ -45,6 +57,10 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message message = messages.get(position);
+        Log.d("ChatAdapter", "Binding message: " + message.getMessage() +
+                " at position: " + position +
+                " with type: " + getItemViewType(position));
+
         if (holder instanceof SentMessageViewHolder) {
             ((SentMessageViewHolder) holder).bind(message);
         } else if (holder instanceof ReceivedMessageViewHolder) {
@@ -66,7 +82,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
 
         public void bind(Message message) {
-            messageText.setText(message.getContent());
+            messageText.setText(message.getMessage());
         }
     }
 
@@ -79,7 +95,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
 
         public void bind(Message message) {
-            messageText.setText(message.getContent());
+            messageText.setText(message.getMessage());
         }
     }
 }

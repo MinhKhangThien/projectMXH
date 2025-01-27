@@ -1,22 +1,75 @@
 package com.example.projectmxh.Model;
 
 public class Message {
-    private String content; // Nội dung tin nhắn
-    private boolean sentByUser; // true nếu tin nhắn được gửi bởi người dùng
+    private String id;
+    private String senderName;
+    private String receiverName;
+    private String message; // changed from message
+    private String date;
+    private Status status;
 
-    // Constructor
-    public Message(String content, boolean sentByUser) {
-        this.content = content;
-        this.sentByUser = sentByUser;
+    public Message() {
     }
 
-    // Getter cho nội dung tin nhắn
-    public String getContent() {
-        return content;
+    public Message(String id, String senderName, String receiverName, String message, String date, Status status) {
+        this.id = id;
+        this.senderName = senderName;
+        this.receiverName = receiverName;
+        this.message = message;
+        this.date = date;
+        this.status = status;
     }
 
-    // Getter để kiểm tra tin nhắn được gửi bởi người dùng hay không
-    public boolean isSentByUser() {
-        return sentByUser;
+    // Add method to check if message is sent by current user
+    public boolean isSentByUser(String currentUser) {
+        return senderName != null && senderName.equals(currentUser);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
+    }
+
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    public void setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 }

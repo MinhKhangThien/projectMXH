@@ -6,7 +6,7 @@
     android:padding="12dp">
 
     <!-- Avatar người gửi -->
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/avatar"
         android:layout_width="50dp"
         android:layout_height="50dp"

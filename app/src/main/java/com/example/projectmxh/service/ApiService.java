@@ -1,6 +1,7 @@
 package com.example.projectmxh.service;
 
 import com.example.projectmxh.Model.Comment;
+import com.example.projectmxh.Model.Message;
 import com.example.projectmxh.config.CloudinaryConfig;
 import com.example.projectmxh.dto.AppUserDto;
 import com.example.projectmxh.dto.request.CommentRequest;
@@ -76,6 +77,16 @@ public interface ApiService {
     
     @GET("/api/v1/post/comment/{commentId}")
     Call<Integer> getReplyCount(@Path("commentId") String commentId);
+
+    //Chat
+    @GET("/api/v1/chat/private-messages/{senderName}/{receiverName}")
+    Call<List<Message>> getPrivateMessages(
+            @Path("senderName") String senderName,
+            @Path("receiverName") String receiverName
+    );
+
+    @GET("/api/v1/chat/public-messages")
+    Call<List<Message>> getPublicMessages();
 
     // For Cloudinary upload (if needed)
     @Multipart
