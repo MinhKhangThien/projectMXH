@@ -19,6 +19,7 @@ import com.example.projectmxh.R;
 import com.example.projectmxh.adapter.ChatAdapter;
 import com.example.projectmxh.Model.Message;
 import com.example.projectmxh.config.WebSocketConfig;
+import com.example.projectmxh.dto.AppUserDto;
 import com.example.projectmxh.service.ApiClient;
 import com.example.projectmxh.service.ApiService;
 import com.google.gson.Gson;
@@ -67,7 +68,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         backIcon.setOnClickListener(v -> finish());
-        
+
         sendIcon.setOnClickListener(v -> {
             String message = messageEditText.getText().toString().trim();
             if (!message.isEmpty()) {
@@ -78,7 +79,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void setupChat() {
-        currentUser = getCurrentUser();
         receiverUser = getIntent().getStringExtra("receiverName");
         String receiverFullname = getIntent().getStringExtra("receiverFullName");
         String avatarUrl = getIntent().getStringExtra("avatarUrl");
@@ -87,25 +87,53 @@ public class ChatActivity extends AppCompatActivity {
         Glide.with(this).load(avatarUrl).placeholder(R.drawable.ic_avatar).into(avatar);
 
         messages = new ArrayList<>();
-        chatAdapter = new ChatAdapter(messages, currentUser);
 
-        chatMessages.setLayoutManager(new LinearLayoutManager(this));
-        chatMessages.setAdapter(chatAdapter);
+        // Get current user first, then setup adapter and WebSocket
+        getCurrentUserAsync(username -> {
+            currentUser = username;
+            // Initialize adapter after we have currentUser
+            chatAdapter = new ChatAdapter(messages, currentUser);
+            chatMessages.setLayoutManager(new LinearLayoutManager(this));
+            chatMessages.setAdapter(chatAdapter);
 
-        // Initialize WebSocket
-        webSocket = new WebSocketConfig(this);
+            webSocket = new WebSocketConfig(this);
+            loadMessages();
+        });
+    }
 
-        // Load messages
-        loadMessages();
+    private void getCurrentUserAsync(OnUserLoadedCallback callback) {
+        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
+        apiService.getMe().enqueue(new Callback<AppUserDto>() {
+            @Override
+            public void onResponse(Call<AppUserDto> call, Response<AppUserDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String username = response.body().getUsername();
+                    Log.d("ChatActivity", "Current user loaded: " + username);
+                    callback.onUserLoaded(username);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AppUserDto> call, Throwable t) {
+                Log.e("ChatActivity", "Failed to get current user: " + t.getMessage());
+                Toast.makeText(ChatActivity.this, "Failed to load user data", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     public String getCurrentUser() {
-//        SharedPreferences prefs = getSharedPreferences("Auth", MODE_PRIVATE);
-//        return prefs.getString("username", "");
-        return "khang48@gmail.com";
+        return currentUser;
+    }
+
+    interface OnUserLoadedCallback {
+        void onUserLoaded(String username);
     }
 
     private void loadMessages() {
+        if(currentUser == null || currentUser.isEmpty()){
+            currentUser = getCurrentUser();
+            return;
+        }
         Log.d("ChatActivity", "Loading messages for currentUser: " + currentUser + " and receiverUser: " + receiverUser);
 
         ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);

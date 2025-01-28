@@ -38,10 +38,14 @@ public class WebSocketConfig {
             public void onOpen(ServerHandshake handshake) {
                 Log.d("WebSocket", "Connected");
                 isConnected = true;
-                activity.runOnUiThread(() -> {
-                    // Subscribe to private channel
-                    subscribe("/user/" + activity.getCurrentUser() + "/private");
-                });
+                String currentUser = activity.getCurrentUser();
+                if (currentUser != null && !currentUser.isEmpty()) {
+                    subscribe("/user/" + currentUser + "/private");
+                    Log.d("WebSocket", "Subscribed for user: " + currentUser);
+                } else {
+                    Log.e("WebSocket", "Current user is null or empty");
+                    reconnect();
+                }
             }
 
             @Override

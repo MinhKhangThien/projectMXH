@@ -4,9 +4,12 @@ import com.example.projectmxh.Model.Comment;
 import com.example.projectmxh.Model.Message;
 import com.example.projectmxh.config.CloudinaryConfig;
 import com.example.projectmxh.dto.AppUserDto;
+import com.example.projectmxh.dto.NotificationUserResponseDto;
+import com.example.projectmxh.dto.PageData;
 import com.example.projectmxh.dto.request.CommentRequest;
 import com.example.projectmxh.dto.request.CreatePostRequest;
 import com.example.projectmxh.dto.request.LoginRequest;
+import com.example.projectmxh.dto.request.PendingFollowRequest;
 import com.example.projectmxh.dto.request.RegisterRequest;
 import com.example.projectmxh.dto.response.CloudinaryResponse;
 import com.example.projectmxh.dto.response.LoginResponse;
@@ -24,6 +27,7 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
     //auth
@@ -32,6 +36,10 @@ public interface ApiService {
 
     @POST("/api/v1/auth/signup")
     Call<AppUserDto> register(@Body RegisterRequest registerRequest);
+
+    @GET("/api/v1/auth/user")
+    Call<AppUserDto> getMe();
+
 
     //post
     @GET("posts/{userId}")
@@ -43,6 +51,7 @@ public interface ApiService {
     @GET("/api/v1/timeline")
     Call<List<Post>> getTimeline();
 
+
     // like
     @POST("/api/v1/post/like/{postId}")
     Call<Void> likePost(@Path("postId") String postId);
@@ -52,6 +61,7 @@ public interface ApiService {
 
     @POST("/api/v1/comment/like/{commentId}")
     Call<Void> likeComment(@Path("commentId") String commentId);
+
 
     //comment
     @POST("/api/v1/post/comment")
@@ -78,6 +88,7 @@ public interface ApiService {
     @GET("/api/v1/post/comment/{commentId}")
     Call<Integer> getReplyCount(@Path("commentId") String commentId);
 
+
     //Chat
     @GET("/api/v1/chat/private-messages/{senderName}/{receiverName}")
     Call<List<Message>> getPrivateMessages(
@@ -87,6 +98,20 @@ public interface ApiService {
 
     @GET("/api/v1/chat/public-messages")
     Call<List<Message>> getPublicMessages();
+
+
+    // Follow
+    @GET("/api/v1/user/follow/{userId}/followings")
+    Call<List<PendingFollowRequest>> getFollowings(@Path("userId") String userId);
+
+
+    // Notification
+    @GET("/api/v1/notification")
+    Call<PageData<NotificationUserResponseDto>> getNotifications(
+            @Query("page") int page,
+            @Query("pageSize") int pageSize,
+            @Query("isRead") Boolean isRead
+    );
 
     // For Cloudinary upload (if needed)
     @Multipart

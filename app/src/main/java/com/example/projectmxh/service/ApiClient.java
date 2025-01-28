@@ -2,6 +2,9 @@ package com.example.projectmxh.service;
 
 import android.content.Context;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -13,14 +16,18 @@ public class ApiClient {
 
     public static Retrofit getClientWithToken(Context context) {
         if (retrofitWithToken == null) {
+            Gson gson = new GsonBuilder()
+                    .setLenient()
+                    .create();
+
             OkHttpClient client = new OkHttpClient.Builder()
                     .addInterceptor(new AuthInterceptor(context))
                     .build();
 
             retrofitWithToken = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
-                    .client(client) // Dùng OkHttpClient có Interceptor
-                    .addConverterFactory(GsonConverterFactory.create())
+                    .client(client)
+                    .addConverterFactory(GsonConverterFactory.create(gson))
                     .build();
         }
         return retrofitWithToken;

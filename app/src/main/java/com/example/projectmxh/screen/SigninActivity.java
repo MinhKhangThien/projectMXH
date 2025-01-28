@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.example.projectmxh.BaseActivity;
 import com.example.projectmxh.HomeFragment;
 import com.example.projectmxh.MainActivity;
+import com.example.projectmxh.NotificationsActivity;
 import com.example.projectmxh.R;
 import com.example.projectmxh.dto.request.LoginRequest;
 import com.example.projectmxh.dto.response.LoginResponse;
@@ -101,7 +102,7 @@ public class SigninActivity extends AppCompatActivity {
                     Toast.makeText(SigninActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
 
                     // Chuyển sang BaseActivity
-                    Intent intent = new Intent(SigninActivity.this, MessageActivity.class);
+                    Intent intent = new Intent(SigninActivity.this, BaseActivity.class);
                     startActivity(intent);
                     finish();
                 } else {

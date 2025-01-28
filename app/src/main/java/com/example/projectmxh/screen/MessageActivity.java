@@ -2,6 +2,7 @@ package com.example.projectmxh.screen;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.projectmxh.R;
 import com.example.projectmxh.adapter.MessageAdapter;
 import com.example.projectmxh.Model.User;
+import com.example.projectmxh.dto.AppUserDto;
+import com.example.projectmxh.dto.request.PendingFollowRequest;
 import com.example.projectmxh.service.ApiClient;
 import com.example.projectmxh.service.ApiService;
 
@@ -50,37 +53,51 @@ public class MessageActivity extends AppCompatActivity {
     }
 
     private void loadBoxChats() {
-        // Thêm dữ liệu mẫu
-        users.add(new User("1", "khang@gmail.com", "Loves technology", "Male", "Khang Nguyen"));
-        users.add(new User("5", "khang48@gmail.com", "Loves technology", "Male", "Khang 2"));
-        users.add(new User("2", "linhtran@gmail.com", "Dreamer and coder", "Female", "Linh Tran"));
-        users.add(new User("3", "ha@gmail.com", "Full-stack developer", "Male", "Ha Vo"));
-        users.add(new User("4", "thuynguyen@gmail.com", "Travel enthusiast", "Female", "Thuy Nguyen"));
+        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
 
-        // Gán adapter để hiển thị dữ liệu
-        messageAdapter.notifyDataSetChanged();
+        // First get current user's ID
+        apiService.getMe().enqueue(new Callback<AppUserDto>() {
+            @Override
+            public void onResponse(Call<AppUserDto> call, Response<AppUserDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String userId = String.valueOf(response.body().getId());
+                    loadFollowings(userId);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AppUserDto> call, Throwable t) {
+                Log.e("MessageActivity", "Failed to get current user: " + t.getMessage());
+                Toast.makeText(MessageActivity.this, "Error loading user data", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    // API để lấy danh sách người đã chat
-//    private void loadBoxChats() {
-//        // API giả định để lấy danh sách người đã chat
-//        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
-//        apiService.getUsersList().enqueue(new Callback<List<User>>() {
-//            @Override
-//            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
-//                if (response.isSuccessful() && response.body() != null) {
-//                    users.clear();
-//                    users.addAll(response.body());
-//                    messageAdapter.notifyDataSetChanged();
-//                } else {
-//                    Toast.makeText(MessageActivity.this, "Failed to load users", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<List<User>> call, Throwable t) {
-//                Toast.makeText(MessageActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//    }
+    private void loadFollowings(String userId) {
+        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
+        apiService.getFollowings(userId).enqueue(new Callback<List<PendingFollowRequest>>() {
+            @Override
+            public void onResponse(Call<List<PendingFollowRequest>> call, Response<List<PendingFollowRequest>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    users.clear();
+                    for (PendingFollowRequest following : response.body()) {
+                        users.add(new User(
+                                following.getId(),
+                                following.getUserName(),
+                                following.getBio(),
+                                "",  // gender not provided in response
+                                following.getFullName()
+                        ));
+                    }
+                    messageAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<PendingFollowRequest>> call, Throwable t) {
+                Log.e("MessageActivity", "Failed to load followings: " + t.getMessage());
+                Toast.makeText(MessageActivity.this, "Error loading chat list", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 }
