@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- Video chính của người khác -->
+    <SurfaceView
+        android:id="@+id/remoteVideoView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <!-- Video của bản thân (góc trên phải) -->
+    <SurfaceView
+        android:id="@+id/localVideoView"
+        android:layout_width="100dp"
+        android:layout_height="150dp"
+        android:layout_margin="16dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:background="#444444"
+        android:elevation="4dp" />
+
+    <!-- Thanh điều khiển ở dưới cùng -->
+    <LinearLayout
+        android:id="@+id/controlPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@android:color/transparent"
+        android:padding="16dp">
+
+        <!-- Nút hiệu ứng -->
+        <ImageButton
+            android:id="@+id/btnEffects"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_mic"
+            android:contentDescription="Micro" />
+
+        <ImageButton
+            android:id="@+id/btnEndCall"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/ic_endcall"
+            android:contentDescription="Kết thúc cuộc gọi" />
+        
+        <!-- Nút chuyển camera -->
+        <ImageButton
+            android:id="@+id/btnSwitchCamera"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="16dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_switchcam"
+            android:contentDescription="Chuyển camera"/>
+
+        <!-- Nút kết thúc -->
+
+    </LinearLayout>
+</RelativeLayout>
