@@ -10,6 +10,7 @@
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:usesCleartextTraffic="true"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -28,7 +29,7 @@
             </intent-filter>
         </activity>
 
-        <!--Trang chủ/ Xài activity nào của t thì đổi sang theme Material3 nha, của m là AppCompat-->
+        <!--Trang chủ/ Xài activity: nào của t thì đổi sang theme Material3 nha, của m là AppCompat-->
         <activity
             android:name=".BaseActivity"
             android:exported="true"

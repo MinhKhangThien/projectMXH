@@ -30,12 +30,13 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/postButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_centerVertical="true"
                     android:layout_alignParentEnd="true"
                     android:layout_marginEnd="16dp"
                     android:background="@drawable/round_button_colormain"
                     android:text="Post"
-                    app:cornerRadius="20dp"/>
+                    android:textSize="14sp" />
             </RelativeLayout>
 
         </androidx.appcompat.widget.Toolbar>
@@ -52,7 +53,7 @@
             android:padding="16dp">
 
             <!-- Profile Section -->
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/profileImage"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -76,7 +77,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:minHeight="48dp"
-                android:layout_marginStart="24dp"
+                android:layout_marginStart="6dp"
                 app:layout_constraintStart_toEndOf="@id/profileImage"
                 app:layout_constraintTop_toBottomOf="@id/userNameText"/>
 
@@ -85,7 +86,7 @@
                 android:id="@+id/postContentEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="28dp"
                 android:background="@null"
                 android:hint="What's on your mind?"
                 android:gravity="top"

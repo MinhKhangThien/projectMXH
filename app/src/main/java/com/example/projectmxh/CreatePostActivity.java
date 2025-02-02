@@ -1,5 +1,6 @@
 package com.example.projectmxh;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -18,14 +19,37 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.projectmxh.Components.OptionAdapter;
 import com.example.projectmxh.Components.OptionItem;
+import com.example.projectmxh.config.CloudinaryConfig;
+import com.example.projectmxh.dto.request.CreatePostRequest;
+import com.example.projectmxh.dto.response.CloudinaryResponse;
+import com.example.projectmxh.service.ApiClient;
+import com.example.projectmxh.service.ApiService;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import okhttp3.MediaType;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CreatePostActivity extends AppCompatActivity {
     private static final int RESULT_POST_CREATED = 101;
+    public static final int REQUEST_CREATE_POST = 100;
+
+    private ProgressDialog progressDialog;
 
     // UI Components
     private EditText postContentEditText;
@@ -52,6 +76,9 @@ public class CreatePostActivity extends AppCompatActivity {
         setupBottomSheet();
         setupPhotoPicker();
         setupListeners();
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setCancelable(false);
     }
 
     private void initializeViews() {
@@ -175,22 +202,156 @@ public class CreatePostActivity extends AppCompatActivity {
     }
 
     private void createPost() {
-        String content = postContentEditText.getText().toString().trim();
+        String caption = postContentEditText.getText().toString().trim();
         
-        if (content.isEmpty() && selectedImageView.getDrawable() == null) {
-            Toast.makeText(this, "Please add some content or image", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        String privacy = privacySpinner.getSelectedItem().toString();
-
-        if (content.isEmpty() && selectedImageView.getDrawable() == null) {
+        if (caption.isEmpty() && selectedImageView.getDrawable() == null) {
             Toast.makeText(this, "Please add some content or image", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // TODO: Implement post creation logic
-        Toast.makeText(this, "Creating post...", Toast.LENGTH_SHORT).show();
+        // Show loading indicator
+        //showLoading();
+
+        showProgressDialog("Creating post...");
+
+        // First upload image to Cloudinary if image is selected
+        if (selectedImageView.getDrawable() != null) {
+            handleImagePost(caption);
+        } else {
+            handleTextPost(caption);
+        }
     }
+
+    private void handleImagePost(String caption) {
+        File imageFile = convertImageViewToFile();
+        if (imageFile == null) {
+            hideProgressDialog();
+            Toast.makeText(this, "Failed to process image", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Prepare upload
+        RequestBody uploadPreset = RequestBody.create(
+            MediaType.parse("text/plain"), 
+            CloudinaryConfig.UPLOAD_PRESET
+        );
+        
+        RequestBody requestFile = RequestBody.create(
+            imageFile,
+            MediaType.parse("image/*")
+        );
+        
+        MultipartBody.Part body = MultipartBody.Part.createFormData(
+            "file", 
+            imageFile.getName(), 
+            requestFile
+        );
+
+        // Upload to Cloudinary
+        ApiService cloudinaryService = ApiClient.getClientWithoutToken().create(ApiService.class);
+        cloudinaryService.uploadToCloudinary(uploadPreset, body)
+            .enqueue(new Callback<CloudinaryResponse>() {
+                @Override
+                public void onResponse(Call<CloudinaryResponse> call, Response<CloudinaryResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        String imageUrl = response.body().getUrl();
+                        createPostWithData(caption, "IMAGE", imageUrl);
+                    } else {
+                        handleError("Failed to upload image");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<CloudinaryResponse> call, Throwable t) {
+                    handleError("Network error: " + t.getMessage());
+                }
+            });
+    }
+
+    private void handleTextPost(String caption) {
+        createPostWithData(caption, "REEL", null);
+    }
+
+    private void createPostWithData(String caption, String type, String imageUrl) {
+        CreatePostRequest request = new CreatePostRequest(caption, type, imageUrl);
+        
+        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
+        apiService.createPost(request).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                hideProgressDialog();
+                if (response.isSuccessful()) {
+                    Toast.makeText(CreatePostActivity.this, "Post created successfully", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK);
+                    finish();
+                } else {
+                    handleError("Failed to create post");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                handleError("Network error: " + t.getMessage());
+                finish();
+            }
+        });
+    }
+
+        private File convertImageViewToFile() {
+        try {
+            // Get drawable from ImageView
+            Bitmap bitmap = ((BitmapDrawable) selectedImageView.getDrawable()).getBitmap();
+            
+            // Create a file to write bitmap data
+            File f = new File(getCacheDir(), "temp_image_" + System.currentTimeMillis() + ".jpg");
+            f.createNewFile();
+
+            // Convert bitmap to byte array
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, bos);
+            byte[] bitmapData = bos.toByteArray();
+
+            // Write the bytes in file
+            FileOutputStream fos = new FileOutputStream(f);
+            fos.write(bitmapData);
+            fos.flush();
+            fos.close();
+
+            return f;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void handleError(String message) {
+        hideProgressDialog();
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showProgressDialog(String message) {
+        if (progressDialog != null) {
+            progressDialog.setMessage(message);
+            progressDialog.show();
+        }
+    }
+
+    private void hideProgressDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
+    }
+
+
 
     @Override
     public boolean onSupportNavigateUp() {

@@ -1,5 +1,6 @@
-package com.example.projectmxh.adapters;
+package com.example.projectmxh.adapter;
 
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,13 +13,14 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.projectmxh.Model.Post;
 import com.example.projectmxh.R;
-import com.example.projectmxh.models.Post;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.List;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
+    private Context context;
     private List<Post> posts;
     private PostClickListener listener;
 
@@ -28,7 +30,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         void onMoreClick(Post post, int position);
     }
 
-    public PostAdapter(List<Post> posts, PostClickListener listener) {
+    public PostAdapter(Context context, List<Post> posts, PostClickListener listener) {
+        this.context = context;
         this.posts = posts;
         this.listener = listener;
     }
@@ -53,7 +56,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     }
 
     class PostViewHolder extends RecyclerView.ViewHolder {
-        private ImageView authorImage;
+        private ImageView avatarImage;
         private TextView authorName;
         private TextView postTime;
         private TextView postContent;
@@ -63,17 +66,22 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         private ImageButton saveButton;
         private ImageButton moreButton;
 
+        private TextView likeCountText;
+
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
-            authorImage = itemView.findViewById(R.id.authorImage);
-            authorName = itemView.findViewById(R.id.authorName);
-            postTime = itemView.findViewById(R.id.postTime);
-            postContent = itemView.findViewById(R.id.postContent);
+            avatarImage = itemView.findViewById(R.id.avatarImage);
+            authorName = itemView.findViewById(R.id.nameText);
+            postTime = itemView.findViewById(R.id.timeText);
+            postContent = itemView.findViewById(R.id.postContentText);
             postImage = itemView.findViewById(R.id.postImage);
             likeButton = itemView.findViewById(R.id.likeButton);
             commentButton = itemView.findViewById(R.id.commentButton);
             saveButton = itemView.findViewById(R.id.saveButton);
             moreButton = itemView.findViewById(R.id.moreButton);
+
+            likeCountText = itemView.findViewById(R.id.likeCountText);
+            likeButton = itemView.findViewById(R.id.likeButton);
 
             setupClickListeners();
         }
@@ -93,12 +101,12 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 }
             });
 
-            saveButton.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    listener.onCommentClick(posts.get(position), position);
-                }
-            });
+//            saveButton.setOnClickListener(v -> {
+//                int position = getAdapterPosition();
+//                if (position != RecyclerView.NO_POSITION) {
+//                    listener.onCommentClick(posts.get(position), position);
+//                }
+//            });
 
 
             moreButton.setOnClickListener(v -> {
@@ -110,37 +118,42 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         }
 
         void bind(Post post) {
-            authorName.setText(post.getAuthorName());
-            postContent.setText(post.getContent());
-            postTime.setText(formatTime(post.getTimestamp()));
+            // Set user info
+            authorName.setText(post.getUser().getUserName());
+            postContent.setText(post.getCaption());
+            postTime.setText(formatTimeAgo(post.getCreatedAt()));
 
-            // Load author avatar
-            Glide.with(authorImage.getContext())
-                    .load(post.getAuthorAvatar())
-                    .placeholder(R.drawable.ic_avatar)
-                    .into(authorImage);
+            // Load user avatar (placeholder for now)
+            Glide.with(avatarImage.getContext())
+                    .load(R.drawable.ic_avatar)
+                    .into(avatarImage);
 
             // Load post image if exists
-            if (post.getImageUrl() != null && !post.getImageUrl().isEmpty()) {
+            if (post.getPostContentUrl() != null && !post.getPostContentUrl().isEmpty()
+                    && post.getPostType().equals("IMAGE")) {
                 postImage.setVisibility(View.VISIBLE);
                 Glide.with(postImage.getContext())
-                        .load(post.getImageUrl())
+                        .load(post.getPostContentUrl())
                         .into(postImage);
             } else {
                 postImage.setVisibility(View.GONE);
             }
 
-            // Update like button state
-            if (post.isLiked()) {
-                likeButton.setImageTintList(ColorStateList.valueOf(itemView.getContext().getColor(R.color.primaryColor)));
-            } else {
-                likeButton.setImageTintList(ColorStateList.valueOf(itemView.getContext().getColor(R.color.textSecondary)));
-            }
+            // Set like count
+            likeCountText.setText(String.valueOf(post.getLikeCount()));
+
+            // Set like button state
+            likeButton.setImageResource(post.isLiked() ?
+                    R.drawable.ic_heart_filled :
+                    R.drawable.ic_like);
+            likeButton.setColorFilter(post.isLiked() ?
+                    context.getColor(R.color.red) :
+                    context.getColor(R.color.gray));
         }
 
-        private String formatTime(long timestamp) {
-            // Implement time formatting logic
-            return "Just now"; // Placeholder
+        private String formatTimeAgo(String dateStr) {
+            // TODO: Implement proper date formatting
+            return "Just now";
         }
     }
 }

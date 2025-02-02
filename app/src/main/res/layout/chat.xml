@@ -26,7 +26,7 @@
             android:layout_marginEnd="8dp" />
 
         <!-- Ảnh đại diện -->
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/avatar"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -62,7 +62,7 @@
             android:layout_height="30dp"
             android:src="@drawable/ic_videocall"
             android:contentDescription="Video Call Icon"
-            android:layout_marginEnd="16dp"/>
+            android:layout_marginEnd="16dp" />
 
         <ImageView
             android:id="@+id/detail"

@@ -17,12 +17,12 @@
         android:gravity="center_vertical">
 
         <!-- Author Image -->
-        <ImageView
-            android:id="@+id/authorImage"
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/avatarImage"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/ic_avatar"
-            android:contentDescription="@string/author_avatar"/>
+            android:contentDescription="@string/author_avatar" />
 
         <!-- Author Info -->
         <LinearLayout
@@ -33,7 +33,7 @@
             android:layout_marginStart="12dp">
 
             <TextView
-                android:id="@+id/authorName"
+                android:id="@+id/nameText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Nguyễn Nhật Khang"
@@ -42,7 +42,7 @@
                 android:textColor="@color/black"/>
 
             <TextView
-                android:id="@+id/postTime"
+                android:id="@+id/timeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Just now"
@@ -62,12 +62,13 @@
 
     <!-- Post Content -->
     <TextView
-        android:id="@+id/postContent"
+        android:id="@+id/postContentText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="12dp"
         android:paddingTop="8dp"
         android:paddingBottom="4dp"
+        android:layout_marginTop="-2dp"
         android:text="This is a test post"
         android:textSize="14sp"
         android:textColor="@color/black"/>
@@ -77,16 +78,27 @@
         android:id="@+id/postImage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:adjustViewBounds="true"
         android:scaleType="fitCenter"
         android:contentDescription="@string/post_image"/>
 
     <!-- Post Actions -->
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    android:paddingHorizontal="4dp"
+    android:gravity="center_vertical">
+
+    <!-- Left group: Like + Count + Comment -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:orientation="horizontal"
-        android:layout_marginTop="8dp"
         android:gravity="center_vertical">
 
         <ImageButton
@@ -97,22 +109,35 @@
             android:src="@drawable/ic_like"
             android:contentDescription="Like Post"/>
 
+        <TextView
+            android:id="@+id/likeCountText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="48"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:layout_marginStart="-4dp"
+            android:layout_marginEnd="4dp"/>
+
         <ImageButton
             android:id="@+id/commentButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_comment"
+            android:src="@drawable/ic_comment3"
             android:contentDescription="Comment on Post"/>
-
-        <ImageButton
-            android:id="@+id/saveButton"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_save"
-            android:contentDescription="Save Post"/>
     </LinearLayout>
+
+    <!-- Save button aligned to end -->
+    <ImageButton
+        android:id="@+id/saveButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_save"
+        android:contentDescription="Save Post"/>
+
+</LinearLayout>
 
     <View
         android:layout_width="match_parent"

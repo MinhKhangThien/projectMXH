@@ -1,109 +1,69 @@
-package com.example.projectmxh.models;
+package com.example.projectmxh.Model;
+
+import java.util.List;
 
 public class Post {
     private String id;
-    private String authorId;
-    private String authorName;
-    private String authorAvatar;
-    private String content;
-    private String imageUrl;
-    private long timestamp;
-    private int likeCount;
-    private int commentCount;
+    private String caption;
+    private String postType;
+    private String postContentUrl;
+    private String thumbnailUrl;
+    private String createdAt;
+    private String updatedAt;
+    private User user;
+    private List<User> taggedUser;
+
     private boolean isLiked;
+    private int likeCount;
 
-    public Post(String id, String authorId, String authorName, String authorAvatar, String content, String imageUrl, long timestamp, int likeCount, int commentCount, boolean isLiked) {
+    public Post(String id, String caption, String postType, String postContentUrl, String thumbnailUrl, String createdAt, String updatedAt, User user, List<User> taggedUser, boolean isLiked, int likeCount) {
         this.id = id;
-        this.authorId = authorId;
-        this.authorName = authorName;
-        this.authorAvatar = authorAvatar;
-        this.content = content;
-        this.imageUrl = imageUrl;
-        this.timestamp = timestamp;
-        this.likeCount = likeCount;
-        this.commentCount = commentCount;
-        this.isLiked = isLiked;
+        this.caption = caption;
+        this.postType = postType;
+        this.postContentUrl = postContentUrl;
+        this.thumbnailUrl = thumbnailUrl;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.user = user;
+        this.taggedUser = taggedUser;
+        this.isLiked = false;
+        this.likeCount = 0;
     }
 
-    public String getId() {
-        return id;
-    }
+    // Getters and Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getCaption() { return caption; }
+    public void setCaption(String caption) { this.caption = caption; }
 
-    public String getAuthorId() {
-        return authorId;
-    }
+    public String getPostType() { return postType; }
+    public void setPostType(String postType) { this.postType = postType; }
 
-    public void setAuthorId(String authorId) {
-        this.authorId = authorId;
-    }
+    public String getPostContentUrl() { return postContentUrl; }
+    public void setPostContentUrl(String postContentUrl) { this.postContentUrl = postContentUrl; }
 
-    public String getAuthorName() {
-        return authorName;
-    }
+    public String getThumbnailUrl() { return thumbnailUrl; }
+    public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
 
-    public void setAuthorName(String authorName) {
-        this.authorName = authorName;
-    }
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 
-    public String getAuthorAvatar() {
-        return authorAvatar;
-    }
+    public String getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
 
-    public void setAuthorAvatar(String authorAvatar) {
-        this.authorAvatar = authorAvatar;
-    }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
-    public String getContent() {
-        return content;
-    }
+    public List<User> getTaggedUser() { return taggedUser; }
+    public void setTaggedUser(List<User> taggedUser) { this.taggedUser = taggedUser; }
 
-    public void setContent(String content) {
-        this.content = content;
-    }
+    public boolean isLiked() { return isLiked; }
+    public void setLiked(boolean liked) { isLiked = liked; }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
+    public int getLikeCount() { return likeCount; }
+    public void setLikeCount(int likeCount) { this.likeCount = likeCount; }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public int getLikeCount() {
-        return likeCount;
-    }
-
-    public void setLikeCount(int likeCount) {
-        this.likeCount = likeCount;
-    }
-
-    public int getCommentCount() {
-        return commentCount;
-    }
-
-    public void setCommentCount(int commentCount) {
-        this.commentCount = commentCount;
-    }
-
-    public boolean isLiked() {
-        return isLiked;
-    }
-
-    public void setLiked(boolean liked) {
-        isLiked = liked;
-    }
 
 
 }

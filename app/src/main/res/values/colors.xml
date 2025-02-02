@@ -10,6 +10,6 @@
     <color name="gray">#BDBDBD</color>
     <color name="red">#FF0000</color>
     <color name="light_gray">#FFE0E0E0</color>
-
+    <color name="unread_notification">#E8F0FE</color>
 
 </resources>

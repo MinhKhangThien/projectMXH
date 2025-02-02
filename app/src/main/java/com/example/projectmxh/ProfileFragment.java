@@ -15,8 +15,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.projectmxh.adapters.PostAdapter;
-import com.example.projectmxh.models.Post;
+import com.example.projectmxh.adapter.PostAdapter;
+import com.example.projectmxh.adapter.PostAdapter;
+import com.example.projectmxh.Model.Post;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
@@ -94,7 +95,7 @@ public class ProfileFragment extends Fragment implements PostAdapter.PostClickLi
     private void setupPosts() {
         postsRecyclerView = rootView.findViewById(R.id.postsRecyclerView);
         posts = new ArrayList<>();
-        postAdapter = new PostAdapter(posts, this);
+        postAdapter = new PostAdapter(getContext(), posts, this);
         postsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext())); // Use getContext()
         postsRecyclerView.setAdapter(postAdapter);
 
@@ -111,8 +112,8 @@ public class ProfileFragment extends Fragment implements PostAdapter.PostClickLi
     // Implement PostClickListener methods
     @Override
     public void onLikeClick(Post post, int position) {
-        post.setLiked(!post.isLiked());
-        postAdapter.notifyItemChanged(position);
+//        post.setLiked(!post.isLiked());
+//        postAdapter.notifyItemChanged(position);
     }
 
     @Override
