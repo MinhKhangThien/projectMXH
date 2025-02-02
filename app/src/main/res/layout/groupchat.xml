@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- Thanh trên cùng -->
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Nút quay lại -->
+        <ImageView
+            android:id="@+id/backIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_back"
+            android:contentDescription="Back Icon"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Ảnh đại diện nhóm -->
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/groupAvatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/avatar"
+            android:contentDescription="Group Avatar"
+            android:scaleType="centerCrop"
+            android:layout_marginEnd="16dp" />
+
+        <!-- Tên nhóm và trạng thái -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1">
+
+            <!-- Tên nhóm -->
+            <TextView
+                android:id="@+id/groupName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nhóm Công Nghệ"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:fontFamily="sans-serif-medium" />
+
+            <!-- Trạng thái nhóm -->
+            <TextView
+                android:id="@+id/groupStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12 thành viên đang hoạt động"
+                android:textSize="14sp"
+                android:textColor="@color/gray" />
+        </LinearLayout>
+
+        <!-- Nút cài đặt nhóm -->
+        <ImageView
+            android:id="@+id/groupSettings"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_3gach"
+            android:contentDescription="Group Settings Icon"
+            android:layout_marginEnd="16dp" />
+    </LinearLayout>
+
+    <!-- Danh sách tin nhắn -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/groupChatMessages"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintBottom_toTopOf="@id/messageInput"
+        android:padding="8dp" />
+
+    <!-- Khung nhập tin nhắn -->
+    <LinearLayout
+        android:id="@+id/messageInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center_vertical"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Biểu tượng chèn ảnh -->
+        <ImageView
+            android:id="@+id/photoIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_camera_k"
+            android:contentDescription="Camera Icon"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Ô nhập tin nhắn -->
+        <EditText
+            android:id="@+id/messageEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Nhắn tin nhóm..."
+            android:background="@android:color/transparent"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:padding="8dp"
+            android:imeOptions="actionSend" />
+
+        <!-- Biểu tượng gửi -->
+        <ImageView
+            android:id="@+id/sendIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_send"
+            android:contentDescription="Send Icon"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
