@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.projectmxh.adapter.NotificationAdapter;
 import com.example.projectmxh.dto.NotificationUserResponseDto;
 import com.example.projectmxh.dto.PageData;
-import com.example.projectmxh.screen.ProfileActivity;
+import com.example.projectmxh.screen.ProfileFragment;
 import com.example.projectmxh.service.ApiClient;
 import com.example.projectmxh.service.ApiService;
 
@@ -85,7 +85,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     public void onNotificationClick(NotificationUserResponseDto notification) {
         Intent intent;
         if ("follow".equals(notification.getEntityType())) {
-            intent = new Intent(this, ProfileActivity.class);
+            intent = new Intent(this, ProfileFragment.class);
             intent.putExtra("userId", notification.getEntityId());
         } else {
             intent = new Intent(this, BaseActivity.class);

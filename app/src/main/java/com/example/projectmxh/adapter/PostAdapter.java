@@ -2,6 +2,7 @@ package com.example.projectmxh.adapter;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +18,11 @@ import com.example.projectmxh.Model.Post;
 import com.example.projectmxh.R;
 import com.google.android.material.button.MaterialButton;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
     private Context context;
@@ -119,39 +124,77 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         void bind(Post post) {
             // Set user info
-            authorName.setText(post.getUser().getUserName());
+            if (post.getUser() != null) {
+                // Display name instead of username
+                authorName.setText(post.getUser().getDisplayName());
+
+                // Load user profile picture
+                if (post.getUser().getProfilePicture() != null) {
+                    Glide.with(avatarImage.getContext())
+                            .load(post.getUser().getProfilePicture())
+                            .placeholder(R.drawable.ic_avatar)
+                            .error(R.drawable.ic_avatar)
+                            .into(avatarImage);
+                } else {
+                    Glide.with(avatarImage.getContext())
+                            .load(R.drawable.ic_avatar)
+                            .into(avatarImage);
+                }
+            }
+
+            // Set post content
             postContent.setText(post.getCaption());
-            postTime.setText(formatTimeAgo(post.getCreatedAt()));
 
-            // Load user avatar (placeholder for now)
-            Glide.with(avatarImage.getContext())
-                    .load(R.drawable.ic_avatar)
-                    .into(avatarImage);
+            // Format and set time
+            if (post.getCreatedAt() != null) {
+                try {
+                    String dateStr = post.getCreatedAt().replace('T', ' ');
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                    Date date = format.parse(dateStr.split("\\.")[0]);
 
-            // Load post image if exists
-            if (post.getPostContentUrl() != null && !post.getPostContentUrl().isEmpty()
-                    && post.getPostType().equals("IMAGE")) {
+                    if (date != null) {
+                        CharSequence timeAgo = DateUtils.getRelativeTimeSpanString(
+                                date.getTime(),
+                                System.currentTimeMillis(),
+                                DateUtils.MINUTE_IN_MILLIS
+                        );
+                        postTime.setText(timeAgo);
+                    }
+                } catch (ParseException e) {
+                    postTime.setText(post.getCreatedAt());
+                }
+            }
+
+            // Handle post image
+            String contentUrl = post.getPostContentUrl();
+            if (contentUrl != null && !contentUrl.isEmpty()) {
                 postImage.setVisibility(View.VISIBLE);
                 Glide.with(postImage.getContext())
-                        .load(post.getPostContentUrl())
+                        .load(contentUrl)
+                        .placeholder(android.R.drawable.ic_menu_gallery)
+                        .error(android.R.drawable.ic_menu_report_image)
                         .into(postImage);
             } else {
                 postImage.setVisibility(View.GONE);
             }
 
-            // Set like count
+            // Set like count and state
             likeCountText.setText(String.valueOf(post.getLikeCount()));
+            updateLikeButtonState(post.isLiked());
+        }
 
-            // Set like button state
-            likeButton.setImageResource(post.isLiked() ?
+        private void updateLikeButtonState(boolean isLiked) {
+            likeButton.setImageResource(isLiked ?
                     R.drawable.ic_heart_filled :
                     R.drawable.ic_like);
-            likeButton.setColorFilter(post.isLiked() ?
+
+            likeButton.setColorFilter(isLiked ?
                     context.getColor(R.color.red) :
                     context.getColor(R.color.black));
         }
 
         private String formatTimeAgo(String dateStr) {
+            if (dateStr == null) return "Unknown";
             // TODO: Implement proper date formatting
             return "Just now";
         }

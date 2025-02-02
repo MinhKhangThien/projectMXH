@@ -1,6 +1,5 @@
 package com.example.projectmxh.screen;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -13,18 +12,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.projectmxh.BaseActivity;
-import com.example.projectmxh.HomeFragment;
-import com.example.projectmxh.MainActivity;
-import com.example.projectmxh.NotificationsActivity;
 import com.example.projectmxh.R;
 import com.example.projectmxh.dto.request.LoginRequest;
 import com.example.projectmxh.dto.response.LoginResponse;
 import com.example.projectmxh.service.ApiClient;
 import com.example.projectmxh.service.ApiService;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -102,7 +94,7 @@ public class SigninActivity extends AppCompatActivity {
                     Toast.makeText(SigninActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
 
                     // Chuyển sang BaseActivity
-                    Intent intent = new Intent(SigninActivity.this, NotificationsActivity.class);
+                    Intent intent = new Intent(SigninActivity.this, BaseActivity.class);
                     startActivity(intent);
                     finish();
                 } else {

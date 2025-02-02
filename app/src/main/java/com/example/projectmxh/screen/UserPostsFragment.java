@@ -1,5 +1,6 @@
 package com.example.projectmxh.screen;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,7 +19,6 @@ import com.example.projectmxh.CommentActivity;
 import com.example.projectmxh.Model.Post;
 import com.example.projectmxh.R;
 import com.example.projectmxh.adapter.PostAdapter;
-import com.example.projectmxh.dto.AppUserDto;
 import com.example.projectmxh.service.ApiClient;
 import com.example.projectmxh.service.ApiService;
 
@@ -29,12 +29,31 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MyPostsFragment extends Fragment implements PostAdapter.PostClickListener {
+public class UserPostsFragment extends Fragment implements PostAdapter.PostClickListener {
+    private String userId;
     private RecyclerView postsRecyclerView;
     private PostAdapter postAdapter;
     private List<Post> posts;
     private SwipeRefreshLayout swipeRefreshLayout;
     private View loadingView, errorView;
+
+    private boolean isFragmentAttached = false;
+
+    public static UserPostsFragment newInstance(String userId) {
+        UserPostsFragment fragment = new UserPostsFragment();
+        Bundle args = new Bundle();
+        args.putString("userId", userId);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            userId = getArguments().getString("userId");
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -74,11 +93,15 @@ public class MyPostsFragment extends Fragment implements PostAdapter.PostClickLi
     }
 
     private void loadUserPosts() {
+        if (!isFragmentAttached) return;
+
         showLoading();
         ApiService apiService = ApiClient.getClientWithToken(requireContext()).create(ApiService.class);
-        apiService.getMyPosts().enqueue(new Callback<List<Post>>() {
+        apiService.getUserPosts(userId).enqueue(new Callback<List<Post>>() {
             @Override
             public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
+                if (!isFragmentAttached) return;
+
                 hideLoading();
                 if (response.isSuccessful() && response.body() != null) {
                     posts.clear();
@@ -89,6 +112,7 @@ public class MyPostsFragment extends Fragment implements PostAdapter.PostClickLi
                         final int position = i;
                         updateLikeCount(posts.get(i), position);
                     }
+
                     checkLikeStatusForPosts();
                     postAdapter.notifyDataSetChanged();
                     showContent();
@@ -99,6 +123,7 @@ public class MyPostsFragment extends Fragment implements PostAdapter.PostClickLi
 
             @Override
             public void onFailure(Call<List<Post>> call, Throwable t) {
+                if (!isFragmentAttached) return;
                 hideLoading();
                 showError();
             }
@@ -106,10 +131,14 @@ public class MyPostsFragment extends Fragment implements PostAdapter.PostClickLi
     }
 
     private void updateLikeCount(Post post, int position) {
+        if (!isFragmentAttached) return;
+
         ApiService apiService = ApiClient.getClientWithToken(requireContext()).create(ApiService.class);
         apiService.getLikeCount(post.getId()).enqueue(new Callback<Integer>() {
             @Override
             public void onResponse(Call<Integer> call, Response<Integer> response) {
+                if (!isFragmentAttached) return;
+
                 if (response.isSuccessful() && response.body() != null) {
                     post.setLikeCount(response.body());
                     postAdapter.notifyItemChanged(position);
@@ -118,26 +147,32 @@ public class MyPostsFragment extends Fragment implements PostAdapter.PostClickLi
 
             @Override
             public void onFailure(Call<Integer> call, Throwable t) {
-                Log.e("MyPostsFragment", "Error updating like count: " + t.getMessage());
+                Log.e("UserPostsFragment", "Error updating like count: " + t.getMessage());
             }
         });
     }
 
     private void checkLikeStatusForPosts() {
+        if (!isFragmentAttached) return;
+
         ApiService apiService = ApiClient.getClientWithToken(requireContext()).create(ApiService.class);
         for (Post post : posts) {
             apiService.checkPostLike(post.getId()).enqueue(new Callback<Boolean>() {
                 @Override
                 public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                    if (!isFragmentAttached) return;
+
                     if (response.isSuccessful() && response.body() != null) {
                         post.setLiked(response.body());
-                        postAdapter.notifyDataSetChanged();
+                        if (isAdded()) {
+                            postAdapter.notifyDataSetChanged();
+                        }
                     }
                 }
 
                 @Override
                 public void onFailure(Call<Boolean> call, Throwable t) {
-                    Log.e("MyPostsFragment", "Failed to check like status: " + t.getMessage());
+                    Log.e("UserPostsFragment", "Failed to check like status: " + t.getMessage());
                 }
             });
         }
@@ -145,6 +180,8 @@ public class MyPostsFragment extends Fragment implements PostAdapter.PostClickLi
 
     @Override
     public void onLikeClick(Post post, int position) {
+        if (!isFragmentAttached) return;
+
         ApiService apiService = ApiClient.getClientWithToken(requireContext()).create(ApiService.class);
         apiService.likePost(post.getId()).enqueue(new Callback<Void>() {
             @Override
@@ -206,5 +243,17 @@ public class MyPostsFragment extends Fragment implements PostAdapter.PostClickLi
         loadingView.setVisibility(View.GONE);
         errorView.setVisibility(View.VISIBLE);
         postsRecyclerView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        isFragmentAttached = true;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        isFragmentAttached = false;
     }
 }

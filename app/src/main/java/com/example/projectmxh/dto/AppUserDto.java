@@ -1,5 +1,7 @@
 package com.example.projectmxh.dto;
 
+import com.example.projectmxh.enums.AccountType;
+
 import java.util.UUID;
 
 enum RoleType {
@@ -15,9 +17,10 @@ public class AppUserDto {
     private String displayName;
     private RoleType role;
     private String profilePicture;
+    private AccountType accountType = AccountType.PUBLIC;
 
 
-    public AppUserDto(UUID id, String username, String bio, String gender, String displayName, RoleType role, String profilePicture) {
+    public AppUserDto(UUID id, String username, String bio, String gender, String displayName, RoleType role, String profilePicture, AccountType accountType) {
         this.id = id;
         this.username = username;
         this.bio = bio;
@@ -25,6 +28,7 @@ public class AppUserDto {
         this.displayName = displayName;
         this.role = role;
         this.profilePicture = profilePicture;
+        this.accountType = accountType;
     }
 
     public UUID getId() {
@@ -81,5 +85,13 @@ public class AppUserDto {
 
     public void setProfilePicture(String profilePicture) {
         this.profilePicture = profilePicture;
+    }
+
+    public AccountType getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
     }
 }

@@ -61,7 +61,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
 
         void bind(User user) {
-            senderName.setText(user.getFullName());
+            senderName.setText(user.getDisplayName());
             latestMessage.setText("Last message..."); // Có thể update message cuối cùng từ server
             Glide.with(itemView.getContext())
                     .load("https://i.pinimg.com/474x/b7/14/a2/b714a2713d5d9259dab2a7c0b7df4ff9.jpg")

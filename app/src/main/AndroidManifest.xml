@@ -49,12 +49,6 @@
         </activity>
 
         <activity
-            android:name=".screen.ProfileActivity"
-            android:exported="true"
-            android:theme="@style/Theme.AppCompat">
-        </activity>
-
-        <activity
             android:name=".screen.ChatActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat">
@@ -90,6 +84,11 @@
             android:name=".MenuActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.AppCompat" />
+
+        <activity
+            android:name=".screen.SettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat"/>
 
     </application>
 

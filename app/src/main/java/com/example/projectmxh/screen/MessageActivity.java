@@ -41,7 +41,7 @@ public class MessageActivity extends AppCompatActivity {
             // Chuyển sang ChatActivity khi nhấn vào box chat
             Intent intent = new Intent(MessageActivity.this, ChatActivity.class);
             intent.putExtra("receiverName", user.getUserName());
-            intent.putExtra("receiverFullName", user.getFullName());
+            intent.putExtra("receiverFullName", user.getDisplayName());
             intent.putExtra("avatarUrl", "https://i.pinimg.com/474x/b7/14/a2/b714a2713d5d9259dab2a7c0b7df4ff9.jpg");
             startActivity(intent);
         });
@@ -86,7 +86,8 @@ public class MessageActivity extends AppCompatActivity {
                                 following.getUserName(),
                                 following.getBio(),
                                 "",  // gender not provided in response
-                                following.getFullName()
+                                following.getFullName(),
+                                "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg"
                         ));
                     }
                     messageAdapter.notifyDataSetChanged();

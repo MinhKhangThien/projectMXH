@@ -14,6 +14,7 @@ import com.example.projectmxh.dto.request.RegisterRequest;
 import com.example.projectmxh.dto.response.CloudinaryResponse;
 import com.example.projectmxh.dto.response.LoginResponse;
 import com.example.projectmxh.Model.Post;
+import com.example.projectmxh.enums.FollowStatus;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +24,7 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
@@ -42,9 +44,14 @@ public interface ApiService {
     Call<AppUserDto> getMe();
 
 
+    //user
+    @GET("/api/v1/user/{userId}")
+    Call<AppUserDto> getUserById(@Path("userId") String userId);
+
+
     //post
-    @GET("posts/{userId}")
-    Call<List<Post>> getPosts(@Path("userId") String userId);
+    @GET("/api/v1/post/posts/{userId}")
+    Call<List<Post>> getUserPosts(@Path("userId") String userId);
 
     @POST("/api/v1/post")
     Call<String> createPost(@Body CreatePostRequest createPostRequest);
@@ -52,6 +59,8 @@ public interface ApiService {
     @GET("/api/v1/timeline")
     Call<List<Post>> getTimeline();
 
+    @GET("/api/v1/post")
+    Call<List<Post>> getMyPosts();
 
     // like
     @POST("/api/v1/post/like/{postId}")
@@ -107,6 +116,15 @@ public interface ApiService {
     // Follow
     @GET("/api/v1/user/follow/{userId}/followings")
     Call<List<PendingFollowRequest>> getFollowings(@Path("userId") String userId);
+
+    @GET("/api/v1/user/follow/check/{userId}")
+    Call<FollowStatus> checkFollowStatus(@Path("userId") String userId);
+
+    @POST("/api/v1/user/follow/{userId}")
+    Call<Void> followUser(@Path("userId") String userId);
+
+    @DELETE("/api/v1/user/follow/{userId}")
+    Call<Void> unfollowUser(@Path("userId") String userId);
 
 
     // Notification
