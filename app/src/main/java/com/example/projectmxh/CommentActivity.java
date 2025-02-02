@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -100,6 +101,7 @@ public class CommentActivity extends AppCompatActivity implements ReplyClickList
                     comments.clear();
                     comments.addAll(response.body()); // Đúng kiểu danh sách
                     commentAdapter.notifyDataSetChanged();
+                    loadRepliesForComments();
                 } else {
                     Toast.makeText(CommentActivity.this,
                             "Failed to load comments: " + response.code(),
@@ -115,26 +117,48 @@ public class CommentActivity extends AppCompatActivity implements ReplyClickList
         });
     }
 
+    private void loadRepliesForComments() {
+        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
+        for (Comment comment : comments) {
+            apiService.getCommentReplies(comment.getId()).enqueue(new Callback<List<Comment>>() {
+                @Override
+                public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        comment.setReplies(response.body());
+                        commentAdapter.notifyDataSetChanged();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<Comment>> call, Throwable t) {
+                    Log.e("CommentActivity", "Failed to load replies for comment: " + comment.getId());
+                }
+            });
+        }
+    }
+
     private void submitNormalComment(String content) {
         CommentRequest request = new CommentRequest(content, postId);
         ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
 
-        apiService.addComment(request).enqueue(new Callback<String>() {
+        apiService.addComment(request).enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     commentInput.setText("");
-                    loadComments();
+                    loadComments(); // Reload all comments
                 } else {
+                    Log.e("CommentActivity", "Error: " + response.code());
                     Toast.makeText(CommentActivity.this,
                             "Failed to add comment", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("CommentActivity", "Error: " + t.getMessage());
                 Toast.makeText(CommentActivity.this,
-                        "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        "Network error", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -158,25 +182,38 @@ public class CommentActivity extends AppCompatActivity implements ReplyClickList
     }
 
     private void submitReply(String content) {
+        if (replyingTo == null) return;
+
         CommentRequest request = new CommentRequest(content, postId);
         ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
 
-        apiService.replyToComment(replyingTo.getId(), request).enqueue(new Callback<String>() {
+        apiService.replyToComment(replyingTo.getId(), request).enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    resetReplyState();
-                    loadComments();
-                } else {
-                    Toast.makeText(CommentActivity.this,
-                            "Failed to add reply", Toast.LENGTH_SHORT).show();
+                    commentInput.setText("");
+
+                    // Find comment position and update
+                    for (int i = 0; i < comments.size(); i++) {
+                        if (comments.get(i).getId().equals(replyingTo.getId())) {
+                            CommentAdapter.CommentViewHolder holder =
+                                    (CommentAdapter.CommentViewHolder) commentsRecyclerView
+                                            .findViewHolderForAdapterPosition(i);
+                            if (holder != null) {
+                                holder.refreshReplies(comments.get(i));
+                            }
+                            break;
+                        }
+                    }
+                    replyingTo = null;
                 }
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("CommentActivity", "Error: " + t.getMessage());
                 Toast.makeText(CommentActivity.this,
-                        "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        "Failed to add reply", Toast.LENGTH_SHORT).show();
             }
         });
     }

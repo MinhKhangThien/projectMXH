@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -62,10 +63,13 @@ public interface ApiService {
     @POST("/api/v1/comment/like/{commentId}")
     Call<Void> likeComment(@Path("commentId") String commentId);
 
+    @GET("/api/v1/post/like/check/{postId}")
+    Call<Boolean> checkPostLike(@Path("postId") String postId);
+
 
     //comment
     @POST("/api/v1/post/comment")
-    Call<String> addComment(@Body CommentRequest comment);
+    Call<ResponseBody> addComment(@Body CommentRequest comment);
 
     @GET("/api/v1/post/all-comments/{postId}")
     Call<List<Comment>> getComments(@Path("postId") UUID postId);
@@ -80,7 +84,7 @@ public interface ApiService {
     Call<Integer> getCommentLikeCount(@Path("commentId") String commentId);
 
     @POST("/api/v1/post/{commentId}/reply")
-    Call<String> replyToComment(@Path("commentId") String commentId, @Body CommentRequest request);
+    Call<ResponseBody> replyToComment(@Path("commentId") String commentId, @Body CommentRequest request);
 
     @GET("/api/v1/post/{commentId}/reply")
     Call<List<Comment>> getCommentReplies(@Path("commentId") String commentId);

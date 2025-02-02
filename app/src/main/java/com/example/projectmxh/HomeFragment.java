@@ -115,13 +115,6 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
         retryButton.setOnClickListener(v -> loadTimeline());
     }
 
-
-//    private void setupSwipeRefresh(View view) {
-//        swipeRefreshLayout = view.findViewById(R.id.swipeRefresh);
-//        swipeRefreshLayout.setOnRefreshListener(() -> loadTimeline());
-//        swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright);
-//    }
-
     private void loadTimeline() {
         showLoading();
 
@@ -140,6 +133,7 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
                         final int position = i;
                         updateLikeCount(posts.get(i), position);
                     }
+                    checkLikeStatusForPosts();
                 } else {
                     showError();
                 }
@@ -158,123 +152,34 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
         createPostLauncher.launch(intent);
     }
 
-    private void setupToolbar(View view) {
-        Toolbar toolbar = view.findViewById(R.id.toolbar);
-        if (getActivity() != null) {
-            ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
+    private void checkLikeStatusForPosts() {
+        ApiService apiService = ApiClient.getClientWithToken(getContext()).create(ApiService.class);
+        for (Post post : posts) {
+            apiService.checkPostLike(post.getId()).enqueue(new Callback<Boolean>() {
+                @Override
+                public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        post.setLiked(response.body());
+                        postAdapter.notifyDataSetChanged();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Boolean> call, Throwable t) {
+                    Log.e("HomeFragment", "Failed to check like status: " + t.getMessage());
+                }
+            });
         }
-    }
-
-//    private void setupRecyclerView(View view) {
-//        posts = new ArrayList<>();
-//        postAdapter = new PostAdapter(posts, this);
-//
-//        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-//        postsRecyclerView.setLayoutManager(layoutManager);
-//
-//        // Add scroll listener for pagination
-//        postsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-//                super.onScrolled(recyclerView, dx, dy);
-//                if (!recyclerView.canScrollVertically(1)) {
-//                    loadMorePosts();
-//                }
-//            }
-//        });
-//
-//        postsRecyclerView.setAdapter(postAdapter);
-//    }
-
-    private void setupQuickPost(View view) {
-        View quickPostSection = view.findViewById(R.id.quickPostSection);
-        quickPostSection.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), CreatePostActivity.class);
-            requireActivity().startActivityForResult(intent, CREATE_POST_REQUEST);
-        });
-    }
-
-    private void loadPosts(String userId) {
-
-        // TODO: Implement API call
-//        ApiService apiService = ApiClient.getClient().create(ApiService.class);
-//        apiService.getPosts(userId).enqueue(new Callback<List<Post>>() {
-//            @Override
-//            public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
-//                if (response.isSuccessful() && response.body() != null) {
-//                    posts.clear();
-//                    posts.addAll(response.body());
-//                    postAdapter.notifyDataSetChanged();
-//                } else {
-//                    Toast.makeText(getContext(), "Failed to load posts", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<List<Post>> call, Throwable t) {
-//                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-//            }
-//        });
-
-        // For testing, add dummy data
-//        posts.add(new Post(
-//                "1",
-//                "user1",
-//                "Nguyễn Nhật Khang",
-//                String.valueOf(R.drawable.ic_avatar),
-//                "Received a lot of questions about breaking into the tech industry lately. If you're starting out or looking to switch careers, feel free to connect with me. I'm here to help and share insights! 🐱‍🐉",
-//                "https://hips.hearstapps.com/hmg-prod/images/dog-puppy-on-garden-royalty-free-image-1586966191.jpg?crop=1xw:0.99967xh;center,top&resize=1200:*",
-//                System.currentTimeMillis(),
-//                10,
-//                5,
-//                true
-//        ));
-//
-//        posts.add(new Post(
-//                "2",
-//                "user1",
-//                "Nguyễn Nhật Khang",
-//                String.valueOf(R.drawable.ic_avatar),
-//                "Beautiful scenes",
-//                "https://images.pexels.com/photos/1557652/pexels-photo-1557652.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-//                System.currentTimeMillis(),
-//                20,
-//                3,
-//                true
-//        ));
-//
-//        posts.add(new Post(
-//                "3",
-//                "user1",
-//                "Nguyễn Nhật Khang",
-//                String.valueOf(R.drawable.ic_avatar),
-//                "Paris",
-//                "https://media.tacdn.com/media/attractions-splice-spp-674x446/07/03/1c/9c.jpg",
-//                System.currentTimeMillis(),
-//                30,
-//                7,
-//                true
-//        ));
-
-        postAdapter.notifyDataSetChanged();
-    }
-
-    private void loadMorePosts() {
-        // TODO: Implement pagination
     }
 
     @Override
     public void onLikeClick(Post post, int position) {
         ApiService apiService = ApiClient.getClientWithToken(getContext()).create(ApiService.class);
-
         apiService.likePost(post.getId()).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
-                    // Toggle like state
                     post.setLiked(!post.isLiked());
-                    // Update like count
                     updateLikeCount(post, position);
                 } else {
                     Toast.makeText(getContext(), "Failed to like post", Toast.LENGTH_SHORT).show();

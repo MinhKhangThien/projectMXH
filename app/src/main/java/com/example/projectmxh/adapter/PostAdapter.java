@@ -148,7 +148,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                     R.drawable.ic_like);
             likeButton.setColorFilter(post.isLiked() ?
                     context.getColor(R.color.red) :
-                    context.getColor(R.color.gray));
+                    context.getColor(R.color.black));
         }
 
         private String formatTimeAgo(String dateStr) {

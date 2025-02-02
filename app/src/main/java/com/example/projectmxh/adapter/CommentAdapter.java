@@ -68,7 +68,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         notifyDataSetChanged();
     }
 
-    class CommentViewHolder extends RecyclerView.ViewHolder {
+    public class CommentViewHolder extends RecyclerView.ViewHolder {
         private final CircleImageView avatarImage;
         private final TextView userName;
         private final TextView commentText;
@@ -108,7 +108,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             likeButton.setImageResource(comment.getLikeCount() > 0 ?
                     R.drawable.ic_heart_filled : R.drawable.ic_like);
             likeButton.setColorFilter(comment.getLikeCount() > 0 ?
-                    context.getColor(R.color.red) : context.getColor(R.color.gray));
+                    context.getColor(R.color.red) : context.getColor(R.color.black));
 
             // Avatar
             Glide.with(context)
@@ -150,7 +150,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
             likeButton.setColorFilter(comment.isLiked() ?
                 context.getColor(R.color.red) :
-                context.getColor(R.color.gray));
+                context.getColor(R.color.black));
         }
 
         private void handleLikeClick(Comment comment) {
@@ -228,6 +228,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                         if (replyCount > 0) {
                             viewRepliesText.setVisibility(View.VISIBLE);
                             viewRepliesText.setText("View " + replyCount + " replies");
+
+                            // If this is the first reply, auto-expand
+                            if (replyCount == 1 && !repliesLoaded) {
+                                loadReplies(comment);
+                            }
                         } else {
                             viewRepliesText.setVisibility(View.GONE);
                         }
@@ -247,14 +252,46 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                 @Override
                 public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
                     if (response.isSuccessful() && response.body() != null) {
+                        comment.setReplies(response.body()); // Update comment's replies
                         displayReplies(response.body());
                         repliesLoaded = true;
+                        isViewRepliesClicked = true;
+                        loadReplyCount(comment);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<List<Comment>> call, Throwable t) {
                     Log.e("CommentAdapter", "Error loading replies: " + t.getMessage());
+                }
+            });
+        }
+
+        public void refreshReplies(Comment comment) {
+            // Always load new replies regardless of visibility state
+            ApiService apiService = ApiClient.getClientWithToken(context).create(ApiService.class);
+            apiService.getCommentReplies(comment.getId()).enqueue(new Callback<List<Comment>>() {
+                @Override
+                public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        comment.setReplies(response.body());
+
+                        // Update reply count first
+                        loadReplyCount(comment);
+
+                        // If replies were visible or this is a new reply, show them
+                        if (isViewRepliesClicked || !repliesLoaded) {
+                            displayReplies(response.body());
+                            repliesContainer.setVisibility(View.VISIBLE);
+                            isViewRepliesClicked = true;
+                            repliesLoaded = true;
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<Comment>> call, Throwable t) {
+                    Log.e("CommentAdapter", "Error refreshing replies: " + t.getMessage());
                 }
             });
         }
@@ -278,6 +315,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             TextView timeText = replyView.findViewById(R.id.commentTime);
             ImageButton likeButton = replyView.findViewById(R.id.likeButton);
             TextView likeCountText = replyView.findViewById(R.id.likeCountText);
+            TextView replyText = replyView.findViewById(R.id.replyText);
 
             userName.setText(reply.getUserName());
             commentText.setText(reply.getText());
@@ -291,20 +329,78 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                     .error(R.drawable.ic_avatar)
                     .into(avatarImage);
 
-            // Set like button state
-            likeButton.setImageResource(reply.isLiked() ?
-                    R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
-            likeButton.setColorFilter(reply.isLiked() ?
-                    context.getColor(R.color.red) : context.getColor(R.color.gray));
+            // Set like button state and click listener
+            updateReplyLikeUI(reply, likeButton);
+            likeButton.setOnClickListener(v -> handleReplyLikeClick(reply, likeButton, likeCountText));
 
-            // Hide reply elements for replies
+            // Enable reply to replies
+            replyText.setVisibility(View.VISIBLE);
+            replyText.setOnClickListener(v -> {
+                if (replyListener != null) {
+                    replyListener.onReplyClick(reply);
+                }
+            });
+
+            // Hide nested replies elements
             replyView.findViewById(R.id.viewRepliesText).setVisibility(View.GONE);
             replyView.findViewById(R.id.repliesContainer).setVisibility(View.GONE);
+        }
+
+        private void updateReplyLikeUI(Comment reply, ImageButton likeButton) {
+            likeButton.setImageResource(reply.isLiked() ?
+                    R.drawable.ic_heart_filled : R.drawable.ic_like);
+            likeButton.setColorFilter(reply.isLiked() ?
+                    context.getColor(R.color.red) : context.getColor(R.color.black));
+        }
+
+        private void handleReplyLikeClick(Comment reply, ImageButton likeButton, TextView likeCountText) {
+            reply.setLiked(!reply.isLiked());
+            updateReplyLikeUI(reply, likeButton);
+
+            ApiService apiService = ApiClient.getClientWithToken(context).create(ApiService.class);
+            apiService.likeComment(reply.getId()).enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        updateReplyLikeCount(reply, likeCountText);
+                    } else {
+                        reply.setLiked(!reply.isLiked());
+                        updateReplyLikeUI(reply, likeButton);
+                        Toast.makeText(context, "Failed to like reply", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    reply.setLiked(!reply.isLiked());
+                    updateReplyLikeUI(reply, likeButton);
+                    Toast.makeText(context, "Network error", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        private void updateReplyLikeCount(Comment reply, TextView likeCountText) {
+            ApiService apiService = ApiClient.getClientWithToken(context).create(ApiService.class);
+            apiService.getCommentLikeCount(reply.getId()).enqueue(new Callback<Integer>() {
+                @Override
+                public void onResponse(Call<Integer> call, Response<Integer> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        reply.setLikeCount(response.body());
+                        likeCountText.setText(String.valueOf(response.body()));
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Integer> call, Throwable t) {
+                    Log.e("CommentAdapter", "Failed to get reply like count: " + t.getMessage());
+                }
+            });
         }
 
         private void toggleRepliesVisibility() {
             boolean isVisible = repliesContainer.getVisibility() == View.VISIBLE;
             repliesContainer.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+            isViewRepliesClicked = !isVisible;
         }
 
 
