@@ -1,9 +1,11 @@
 package com.example.projectmxh.service;
 
 import com.example.projectmxh.Model.Comment;
+import com.example.projectmxh.Model.GroupChat;
 import com.example.projectmxh.Model.Message;
 import com.example.projectmxh.config.CloudinaryConfig;
 import com.example.projectmxh.dto.AppUserDto;
+import com.example.projectmxh.dto.GroupChatDto;
 import com.example.projectmxh.dto.NotificationUserResponseDto;
 import com.example.projectmxh.dto.PageData;
 import com.example.projectmxh.dto.request.CommentRequest;
@@ -47,6 +49,9 @@ public interface ApiService {
     //user
     @GET("/api/v1/user/{userId}")
     Call<AppUserDto> getUserById(@Path("userId") String userId);
+
+    @GET("/api/v1/user/search")
+    Call<List<AppUserDto>> searchUsers(@Query("displayName") String displayName);
 
 
     //post
@@ -111,6 +116,27 @@ public interface ApiService {
 
     @GET("/api/v1/chat/public-messages")
     Call<List<Message>> getPublicMessages();
+
+    // Group chat
+    @POST("/api/v1/chat/create-group-chat")
+    Call<GroupChatDto> createGroupChat(@Body List<String> userIds);
+
+    @GET("/api/v1/chat/group-chats")
+    Call<List<GroupChat>> getGroupChats();
+
+    @GET("/api/v1/chat/group-chat/{groupId}/messages")
+    Call<List<Message>> getGroupChatMessages(@Path("groupId") String groupId);
+
+    @GET("/api/v1/chat/group-chat/{groupId}/users")
+    Call<List<AppUserDto>> getGroupChatUsers(@Path("groupId") String groupId);
+
+    @POST("/api/v1/chat/add-user-to-group-chat")
+    Call<String> addUserToGroupChat(@Query("groupId") String groupId,
+                                    @Query("userId") String userId);
+
+    @POST("/api/v1/chat/remove-user-from-group-chat")
+    Call<String> removeUserFromGroupChat(@Query("groupId") String groupId,
+                                         @Query("userId") String userId);
 
 
     // Follow

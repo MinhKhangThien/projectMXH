@@ -184,7 +184,7 @@ public class ChatActivity extends AppCompatActivity {
 
         // Send via WebSocket
         String jsonMessage = new Gson().toJson(message);
-        webSocket.send(jsonMessage);
+        webSocket.send("/app/private-message", jsonMessage);
     }
 
     public void handleNewMessage(String messageJson) {

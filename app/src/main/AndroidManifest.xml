@@ -55,6 +55,12 @@
         </activity>
 
         <activity
+            android:name=".screen.CreateGroupChatActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat">
+        </activity>
+
+        <activity
             android:name=".screen.MessageActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat">

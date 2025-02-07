@@ -3,12 +3,17 @@ package com.example.projectmxh.screen;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.projectmxh.Model.ChatBox;
+import com.example.projectmxh.Model.GroupChat;
 import com.example.projectmxh.R;
 import com.example.projectmxh.adapter.MessageAdapter;
 import com.example.projectmxh.Model.User;
@@ -27,7 +32,8 @@ import retrofit2.Response;
 public class MessageActivity extends AppCompatActivity {
     private RecyclerView messagesList;
     private MessageAdapter messageAdapter;
-    private List<User> users; // Danh sách người đã chat
+    private List<ChatBox> chatBoxes;
+    private ImageView messageIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,26 +41,20 @@ public class MessageActivity extends AppCompatActivity {
         setContentView(R.layout.messages);
 
         messagesList = findViewById(R.id.messages_list);
-        users = new ArrayList<>();
+        chatBoxes = new ArrayList<>();
 
-        messageAdapter = new MessageAdapter(users, user -> {
-            // Chuyển sang ChatActivity khi nhấn vào box chat
-            Intent intent = new Intent(MessageActivity.this, ChatActivity.class);
-            intent.putExtra("receiverName", user.getUserName());
-            intent.putExtra("receiverFullName", user.getDisplayName());
-            intent.putExtra("avatarUrl", "https://i.pinimg.com/474x/b7/14/a2/b714a2713d5d9259dab2a7c0b7df4ff9.jpg");
-            startActivity(intent);
-        });
-
+        messageAdapter = new MessageAdapter(chatBoxes);
         messagesList.setLayoutManager(new LinearLayoutManager(this));
         messagesList.setAdapter(messageAdapter);
+
+        messageIcon = findViewById(R.id.messageIcon);
+        messageIcon.setOnClickListener(v -> showPopupMenu(v));
 
         loadBoxChats();
     }
 
     private void loadBoxChats() {
         ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
-
         // First get current user's ID
         apiService.getMe().enqueue(new Callback<AppUserDto>() {
             @Override
@@ -62,11 +62,40 @@ public class MessageActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     String userId = String.valueOf(response.body().getId());
                     loadFollowings(userId);
+                    loadGroupChats();
                 }
             }
 
             @Override
             public void onFailure(Call<AppUserDto> call, Throwable t) {
+                Log.e("MessageActivity", "Failed to get current user: " + t.getMessage());
+                Toast.makeText(MessageActivity.this, "Error loading user data", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadGroupChats() {
+        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
+        apiService.getGroupChats().enqueue(new Callback<List<GroupChat>>() {
+            @Override
+            public void onResponse(Call<List<GroupChat>> call, Response<List<GroupChat>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    for (GroupChat group : response.body()) {
+                        chatBoxes.add(new ChatBox(
+                                group.getId(),
+                                group.getName(),
+                                null,
+                                group.getImage(),
+                                true,
+                                "Group chat" // You can add last message if available
+                        ));
+                    }
+                    messageAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<GroupChat>> call, Throwable t) {
                 Log.e("MessageActivity", "Failed to get current user: " + t.getMessage());
                 Toast.makeText(MessageActivity.this, "Error loading user data", Toast.LENGTH_SHORT).show();
             }
@@ -79,15 +108,14 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<PendingFollowRequest>> call, Response<List<PendingFollowRequest>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    users.clear();
                     for (PendingFollowRequest following : response.body()) {
-                        users.add(new User(
-                                following.getId(),
-                                following.getUserName(),
-                                following.getBio(),
-                                "",  // gender not provided in response
+                        chatBoxes.add(new ChatBox(
+                                following.getId().toString(),
                                 following.getFullName(),
-                                "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg"
+                                following.getUserName(),
+                                "default_avatar_url",
+                                false,
+                                "Click to start chatting"
                         ));
                     }
                     messageAdapter.notifyDataSetChanged();
@@ -100,5 +128,20 @@ public class MessageActivity extends AppCompatActivity {
                 Toast.makeText(MessageActivity.this, "Error loading chat list", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void showPopupMenu(View view) {
+        android.widget.PopupMenu popup = new android.widget.PopupMenu(this, view);
+        popup.getMenuInflater().inflate(R.menu.message_menu, popup.getMenu());
+
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.create_group) {
+                startActivity(new Intent(this, CreateGroupChatActivity.class));
+                return true;
+            }
+            return false;
+        });
+
+        popup.show();
     }
 }
