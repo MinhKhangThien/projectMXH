@@ -56,5 +56,6 @@ dependencies {
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation "org.java-websocket:Java-WebSocket:1.5.1"
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
+    // implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
 }
 apply plugin: 'com.google.gms.google-services'

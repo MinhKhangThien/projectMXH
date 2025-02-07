@@ -25,6 +25,7 @@
             android:contentDescription="Logo"
             android:layout_marginEnd="16dp" />
 
+
         <TextView
             android:id="@+id/socialText"
             android:layout_width="wrap_content"
@@ -33,7 +34,8 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/black"
-            android:layout_marginEnd="16dp"/>
+            android:layout_marginEnd="16dp"
+            android:gravity="center_vertical" />
 
         <View
             android:layout_width="0dp"
@@ -45,7 +47,64 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/ic_mess"
-            android:contentDescription="Message" />
+            android:contentDescription="Message Icon" />
+    </LinearLayout>
+
+    <!-- Request Row -->
+    <LinearLayout
+        android:id="@+id/requestRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:background="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Avatar -->
+        <ImageView
+            android:id="@+id/requestAvatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="12dp"
+            android:src="@drawable/avatar"
+            android:scaleType="centerCrop"
+            android:contentDescription="Avatar"
+            android:background="@drawable/circle_background" />
+
+        <!-- Info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/requestTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Yêu cầu theo dõi"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/requestSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="tiembongxixon.sg"
+                android:textSize="14sp"
+                android:textColor="@android:color/darker_gray" />
+        </LinearLayout>
+
+        <!-- Blue Dot -->
+        <ImageView
+            android:id="@+id/blueDot"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_chon"/>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -53,7 +112,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/topBar"
+        app:layout_constraintTop_toBottomOf="@+id/requestRow"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

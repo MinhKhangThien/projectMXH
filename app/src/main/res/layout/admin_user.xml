@@ -92,7 +92,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Delete Selected"
+            android:text="Ban User"
             android:background="@drawable/round_button_colormain"
             android:textColor="@android:color/white" />
     </LinearLayout>
