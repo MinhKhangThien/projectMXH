@@ -46,7 +46,7 @@
             android:id="@+id/groupIndicator"
             android:layout_width="16dp"
             android:layout_height="16dp"
-            android:src="@drawable/ic_groupchat"
+            android:src="@drawable/ic_group"
             android:visibility="gone"
             app:layout_constraintTop_toTopOf="@id/senderName"
             app:layout_constraintStart_toEndOf="@id/senderName"
@@ -60,4 +60,21 @@
             android:text="Hi, Robert. I'm facing some challenges ..."
             android:textSize="14sp"/>
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/unreadCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/badge_background"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:padding="4dp"
+        android:minWidth="20dp"
+        android:minHeight="20dp"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

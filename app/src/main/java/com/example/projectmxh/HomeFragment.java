@@ -3,6 +3,9 @@ package com.example.projectmxh;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -10,6 +13,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
@@ -21,11 +26,16 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.projectmxh.CommentActivity;
 import com.example.projectmxh.CreatePostActivity;
 import com.example.projectmxh.R;
 import com.example.projectmxh.adapter.PostAdapter;
 import com.example.projectmxh.Model.Post;
+import com.example.projectmxh.adapter.SearchResultAdapter;
+import com.example.projectmxh.dto.AppUserDto;
+import com.example.projectmxh.screen.MessageActivity;
+import com.example.projectmxh.screen.OtherProfileFragment;
 import com.example.projectmxh.service.ApiClient;
 import com.example.projectmxh.service.ApiService;
 import com.google.android.material.button.MaterialButton;
@@ -37,6 +47,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -46,11 +57,17 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
     private RecyclerView postsRecyclerView;
     private PostAdapter postAdapter;
     private List<Post> posts;
+    private CircleImageView quickPostAvatar;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ActivityResultLauncher<Intent> createPostLauncher;
     private View loadingView;
     private View errorView;
     private MaterialButton retryButton;
+    private EditText searchBar;
+    private RecyclerView searchResultsList;
+    private SearchResultAdapter searchAdapter;
+    private List<AppUserDto> searchResults;
+    private ImageView messageButton;
 
     private static final int CREATE_POST_REQUEST = 100;
 
@@ -85,6 +102,10 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
         swipeRefreshLayout.setOnRefreshListener(() -> loadTimeline());
         swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright);
 
+        // Initialize message button
+        messageButton = view.findViewById(R.id.messageButton);
+        messageButton.setOnClickListener(v -> navigateToMessages());
+
         // Initialize RecyclerView
         postsRecyclerView = view.findViewById(R.id.postsRecyclerView);
         posts = new ArrayList<>();
@@ -93,8 +114,10 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
         postsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         postsRecyclerView.setAdapter(postAdapter);
 
-        // Setup Quick Post Section
+        // Setup Quick Post Section with avatar
         View quickPostSection = view.findViewById(R.id.quickPostSection);
+        quickPostAvatar = quickPostSection.findViewById(R.id.userImage);
+        loadCurrentUserAvatar();
         quickPostSection.setOnClickListener(v -> navigateToCreatePost());
 
         // Initialize state views
@@ -102,10 +125,143 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
         errorView = view.findViewById(R.id.errorView);
         retryButton = view.findViewById(R.id.retryButton);
 
-        // Setup Toolbar
-        Toolbar toolbar = view.findViewById(R.id.toolbar);
-        ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
-        ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle("");
+        searchBar = view.findViewById(R.id.searchBar);
+        searchResultsList = view.findViewById(R.id.searchResultsList);
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
+
+        searchResults = new ArrayList<>();
+        searchAdapter = new SearchResultAdapter(searchResults, user -> {
+            // Handle user click - navigate to profile
+            OtherProfileFragment fragment = OtherProfileFragment.newInstance(user.getId().toString());
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_frame, fragment)
+                    .addToBackStack(null)
+                    .commit();
+
+            // Clear search
+            searchBar.setText("");
+            hideSearchResults();
+        });
+
+        searchResultsList.setLayoutManager(new LinearLayoutManager(getContext()));
+        searchResultsList.setAdapter(searchAdapter);
+        setupSearchBar();
+
+//        // Setup Toolbar
+//        Toolbar toolbar = view.findViewById(R.id.toolbar);
+//        ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
+//        ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle("");
+    }
+
+    private void navigateToMessages() {
+        Intent intent = new Intent(getContext(), MessageActivity.class);
+        startActivity(intent);
+    }
+
+    private void setupSearchBar() {
+        searchBar.addTextChangedListener(new TextWatcher() {
+            private Handler handler = new Handler();
+            private Runnable searchRunnable;
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (searchRunnable != null) {
+                    handler.removeCallbacks(searchRunnable);
+                }
+
+                searchRunnable = () -> {
+                    if (s.length() > 0) {
+                        performSearch(s.toString());
+                    } else {
+                        hideSearchResults();
+                    }
+                };
+                handler.postDelayed(searchRunnable, 300); // Delay search for 300ms
+            }
+        });
+    }
+
+    private void performSearch(String query) {
+        ApiService apiService = ApiClient.getClientWithToken(requireContext()).create(ApiService.class);
+        apiService.searchUsers(query).enqueue(new Callback<List<AppUserDto>>() {
+            @Override
+            public void onResponse(Call<List<AppUserDto>> call, Response<List<AppUserDto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    searchResults.clear();
+                    searchResults.addAll(response.body());
+                    searchAdapter.notifyDataSetChanged();
+
+                    if (!searchResults.isEmpty()) {
+                        showSearchResults();
+                    } else {
+                        hideSearchResults();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<AppUserDto>> call, Throwable t) {
+                Toast.makeText(getContext(), "Error searching users", Toast.LENGTH_SHORT).show();
+                hideSearchResults();
+            }
+        });
+    }
+
+    private void showSearchResults() {
+        searchResultsList.setVisibility(View.VISIBLE);
+        swipeRefreshLayout.setVisibility(View.GONE);
+    }
+
+    private void hideSearchResults() {
+        searchResultsList.setVisibility(View.GONE);
+        swipeRefreshLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void loadCurrentUserAvatar() {
+        if (quickPostAvatar == null || !isAdded()) return; // Add null check
+
+        ApiService apiService = ApiClient.getClientWithToken(requireContext()).create(ApiService.class);
+        apiService.getMe().enqueue(new Callback<AppUserDto>() {
+            @Override
+            public void onResponse(Call<AppUserDto> call, Response<AppUserDto> response) {
+                if (!isAdded()) return; // Check if fragment is still attached
+
+                if (response.isSuccessful() && response.body() != null) {
+                    String avatarUrl = response.body().getProfilePicture();
+                    if (avatarUrl != null && quickPostAvatar != null) {
+                        Glide.with(requireContext())
+                                .load(avatarUrl)
+                                .placeholder(R.drawable.avatar)
+                                .error(R.drawable.avatar)
+                                .into(quickPostAvatar);
+                    } else {
+                        // Load default avatar if URL is null
+                        Glide.with(requireContext())
+                                .load(R.drawable.avatar)
+                                .into(quickPostAvatar);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AppUserDto> call, Throwable t) {
+                if (!isAdded()) return;
+                Log.e("HomeFragment", "Failed to load user avatar", t);
+                // Load default avatar on failure
+                if (quickPostAvatar != null) {
+                    Glide.with(requireContext())
+                            .load(R.drawable.avatar)
+                            .into(quickPostAvatar);
+                }
+            }
+        });
     }
 
     private void setupListeners() {

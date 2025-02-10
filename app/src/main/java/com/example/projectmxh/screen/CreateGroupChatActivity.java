@@ -64,7 +64,8 @@ public class CreateGroupChatActivity extends AppCompatActivity {
         userList.setAdapter(adapter);
 
         findViewById(R.id.backIcon).setOnClickListener(v -> finish());
-        createGroupButton.setOnClickListener(v -> createGroup());
+        createGroupButton.setOnClickListener(v -> createGroupChat(
+                selectedUsers.stream().map(user -> user.getId().toString()).collect(Collectors.toList())));
     }
 
     private void setupSearchInput() {
@@ -100,32 +101,50 @@ public class CreateGroupChatActivity extends AppCompatActivity {
         });
     }
 
-    private void createGroup() {
-        if (selectedUsers.isEmpty()) {
-            Toast.makeText(this, "Please select users", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        List<String> userIds = selectedUsers.stream()
-                .map(user -> user.getId().toString())
-                .collect(Collectors.toList());
-
+    private void createGroupChat(List<String> selectedUserIds) {
         ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
-        apiService.createGroupChat(userIds).enqueue(new Callback<GroupChatDto>() {
+
+        // Get current user ID and add to the list
+        apiService.getMe().enqueue(new Callback<AppUserDto>() {
             @Override
-            public void onResponse(Call<GroupChatDto> call, Response<GroupChatDto> response) {
+            public void onResponse(Call<AppUserDto> call, Response<AppUserDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Intent intent = new Intent(CreateGroupChatActivity.this, GroupChatActivity.class);
-                    intent.putExtra("groupId", response.body().getId().toString());
-                    startActivity(intent);
-                    finish();
+                    String currentUserId = response.body().getId().toString();
+                    selectedUserIds.add(currentUserId); // Add current user to group
+
+                    // Default values for group
+                    String defaultGroupName = "New Group";
+                    String defaultGroupImage = "https://example.com/default-group-image.jpg";
+
+                    apiService.createGroupChat(selectedUserIds, defaultGroupName, defaultGroupImage)
+                            .enqueue(new Callback<GroupChatDto>() {
+                                @Override
+                                public void onResponse(Call<GroupChatDto> call, Response<GroupChatDto> response) {
+                                    if (response.isSuccessful() && response.body() != null) {
+                                        // Navigate to group chat
+                                        Intent intent = new Intent(CreateGroupChatActivity.this, GroupChatActivity.class);
+                                        intent.putExtra("groupId", response.body().getId());
+                                        startActivity(intent);
+                                        finish();
+                                    } else {
+                                        Toast.makeText(CreateGroupChatActivity.this,
+                                                "Failed to create group", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<GroupChatDto> call, Throwable t) {
+                                    Toast.makeText(CreateGroupChatActivity.this,
+                                            "Error creating group", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                 }
             }
 
             @Override
-            public void onFailure(Call<GroupChatDto> call, Throwable t) {
+            public void onFailure(Call<AppUserDto> call, Throwable t) {
                 Toast.makeText(CreateGroupChatActivity.this,
-                        "Failed to create group", Toast.LENGTH_SHORT).show();
+                        "Error getting user info", Toast.LENGTH_SHORT).show();
             }
         });
     }

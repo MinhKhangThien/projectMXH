@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<!--    <org.webrtc.SurfaceViewRenderer-->
+<!--        android:id="@+id/remote_video_view"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent" />-->
+
+<!--    <org.webrtc.SurfaceViewRenderer-->
+<!--        android:id="@+id/local_video_view"-->
+<!--        android:layout_width="120dp"-->
+<!--        android:layout_height="160dp"-->
+<!--        android:layout_alignParentEnd="true"-->
+<!--        android:layout_alignParentTop="true"-->
+<!--        android:layout_margin="16dp" />-->
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_alignParentBottom="true"-->
+<!--        android:gravity="center"-->
+<!--        android:orientation="horizontal"-->
+<!--        android:padding="16dp">-->
+
+<!--        <ImageButton-->
+<!--            android:id="@+id/toggle_mic_button"-->
+<!--            android:layout_width="56dp"-->
+<!--            android:layout_height="56dp"-->
+<!--            android:layout_margin="8dp"-->
+<!--            android:background="@drawable/circle_button_bg"-->
+<!--            android:src="@drawable/ic_mic" />-->
+
+<!--        <ImageButton-->
+<!--            android:id="@+id/end_call_button"-->
+<!--            android:layout_width="64dp"-->
+<!--            android:layout_height="64dp"-->
+<!--            android:layout_margin="8dp"-->
+<!--            android:background="@drawable/circle_button_bg_red"-->
+<!--            android:src="@drawable/ic_call_end" />-->
+
+<!--        <ImageButton-->
+<!--            android:id="@+id/toggle_camera_button"-->
+<!--            android:layout_width="56dp"-->
+<!--            android:layout_height="56dp"-->
+<!--            android:layout_margin="8dp"-->
+<!--            android:background="@drawable/circle_button_bg"-->
+<!--            android:src="@drawable/ic_videocam" />-->
+<!--    </LinearLayout>-->
+</RelativeLayout>

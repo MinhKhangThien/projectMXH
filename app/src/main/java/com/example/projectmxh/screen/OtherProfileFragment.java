@@ -1,6 +1,7 @@
 package com.example.projectmxh.screen;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,7 +34,7 @@ import retrofit2.Response;
 public class OtherProfileFragment extends Fragment {
     private String userId;
     private Button followButton, messageButton;
-    private ImageView myPostsIcon, reelIcon;
+    private ImageView myPostsIcon, reelIcon, backButton;
     private View privateAccountSection, contentContainer;
     private TextView nameText, bioText, postCountText, followerCountText, followingCountText;
     private CircleImageView avatarImage;
@@ -43,8 +44,6 @@ public class OtherProfileFragment extends Fragment {
 
     private View rootView;
     private boolean isFragmentAttached = false;
-
-    private static final String DEFAULT_USER_ID = "1079f733-3525-4c29-ba52-750cb3d1bcd2";
 
     public static OtherProfileFragment newInstance(String userId) {
         OtherProfileFragment fragment = new OtherProfileFragment();
@@ -57,7 +56,17 @@ public class OtherProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_other_profile, container, false);
-        userId = DEFAULT_USER_ID;
+        // Get userId from arguments
+        if (getArguments() != null) {
+            userId = getArguments().getString("userId");
+            if (userId == null) {
+                Toast.makeText(getContext(), "User ID not found", Toast.LENGTH_SHORT).show();
+                return rootView;
+            }
+        } else {
+            Toast.makeText(getContext(), "User ID not found", Toast.LENGTH_SHORT).show();
+            return rootView;
+        }
         initViews(rootView);
         setupNavigation();
         loadUserProfile(); // Load profile first
@@ -79,6 +88,12 @@ public class OtherProfileFragment extends Fragment {
         postCountText = view.findViewById(R.id.postCount);
         followerCountText = view.findViewById(R.id.followerCount);
         followingCountText = view.findViewById(R.id.followingCount);
+        backButton = view.findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> {
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager().popBackStack();
+            }
+        });
 
         followButton.setOnClickListener(v -> handleFollowClick());
         messageButton.setOnClickListener(v -> handleMessageClick());
@@ -131,9 +146,7 @@ public class OtherProfileFragment extends Fragment {
         bioText.setText(user.getBio());
         accountType = user.getAccountType();
 
-//        postCountText.setText(String.valueOf(user.getPostCount()));
-//        followerCountText.setText(String.valueOf(user.getFollowerCount()));
-//        followingCountText.setText(String.valueOf(user.getFollowingCount()));
+        loadUserCounts();
 
         if (user.getProfilePicture() != null) {
             Glide.with(this)
@@ -141,6 +154,55 @@ public class OtherProfileFragment extends Fragment {
                     .placeholder(R.drawable.avatar)
                     .into(avatarImage);
         }
+    }
+
+    private void loadUserCounts() {
+        ApiService apiService = ApiClient.getClientWithToken(requireContext()).create(ApiService.class);
+
+        // Load post count
+        apiService.getUserPostCount(userId).enqueue(new Callback<Integer>() {
+            @Override
+            public void onResponse(Call<Integer> call, Response<Integer> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    postCountText.setText(String.valueOf(response.body()));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Integer> call, Throwable t) {
+                Log.e("OtherProfileFragment", "Failed to load post count", t);
+            }
+        });
+
+        // Load followers count
+        apiService.getFollowersCount(userId).enqueue(new Callback<Long>() {
+            @Override
+            public void onResponse(Call<Long> call, Response<Long> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    followerCountText.setText(String.valueOf(response.body()));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Long> call, Throwable t) {
+                Log.e("OtherProfileFragment", "Failed to load followers count", t);
+            }
+        });
+
+        // Load following count
+        apiService.getFollowingCount(userId).enqueue(new Callback<Long>() {
+            @Override
+            public void onResponse(Call<Long> call, Response<Long> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    followingCountText.setText(String.valueOf(response.body()));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Long> call, Throwable t) {
+                Log.e("OtherProfileFragment", "Failed to load following count", t);
+            }
+        });
     }
 
     private void updateViewState() {
@@ -156,7 +218,7 @@ public class OtherProfileFragment extends Fragment {
         // Case 1: Following and accepted
         if (followStatus == FollowStatus.ACCEPTED) {
             followButton.setText("Unfollow");
-            messageButton.setVisibility(View.VISIBLE);
+            messageButton.setVisibility(View.VISIBLE); // Always show message button for accepted follows
             myPostsIcon.setVisibility(View.VISIBLE);
             reelIcon.setVisibility(View.VISIBLE);
             contentContainer.setVisibility(View.VISIBLE);
@@ -178,7 +240,7 @@ public class OtherProfileFragment extends Fragment {
         if (accountType == AccountType.PRIVATE) {
             privateAccountSection.setVisibility(View.VISIBLE);
         } else {
-            // Public account
+            // Public account - still allow messaging even if not following
             messageButton.setVisibility(View.VISIBLE);
             myPostsIcon.setVisibility(View.VISIBLE);
             reelIcon.setVisibility(View.VISIBLE);
@@ -243,7 +305,34 @@ public class OtherProfileFragment extends Fragment {
     }
 
     private void handleMessageClick() {
-        // Navigate to message screen
+        if (getContext() == null) return;
+
+        ApiService apiService = ApiClient.getClientWithToken(requireContext()).create(ApiService.class);
+        apiService.getUserById(userId).enqueue(new Callback<AppUserDto>() {
+            @Override
+            public void onResponse(Call<AppUserDto> call, Response<AppUserDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    AppUserDto user = response.body();
+                    Intent intent = new Intent(getContext(), ChatActivity.class);
+                    Log.d("OtherProfileFragment", "Starting chat with user: " + user.getUsername());
+                    Log.d("receiverFullName", user.getDisplayName());
+                    Log.d("avatarUrl", user.getProfilePicture());
+                    intent.putExtra("receiverName", user.getUsername());
+                    intent.putExtra("receiverFullName", user.getDisplayName());
+                    intent.putExtra("avatarUrl", user.getProfilePicture());
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(getContext(),
+                            "Failed to get user info", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AppUserDto> call, Throwable t) {
+                Toast.makeText(getContext(),
+                        "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setupNavigation() {

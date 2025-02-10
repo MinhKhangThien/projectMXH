@@ -11,5 +11,8 @@
     <color name="red">#FF0000</color>
     <color name="light_gray">#FFE0E0E0</color>
     <color name="unread_notification">#E8F0FE</color>
+    <color name="primary_dark">#1565C0</color>
+    <color name="secondary">#42A5F5</color>
+    <color name="secondary_dark">#1976D2</color>
 
 </resources>

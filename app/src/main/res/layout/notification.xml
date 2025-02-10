@@ -56,55 +56,39 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp"
-        android:background="@color/white"
-        app:layout_constraintTop_toBottomOf="@id/topBar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:padding="16dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintTop_toBottomOf="@id/topBar">
 
-        <!-- Avatar -->
         <ImageView
-            android:id="@+id/requestAvatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="12dp"
-            android:src="@drawable/avatar"
-            android:scaleType="centerCrop"
-            android:contentDescription="Avatar"
-            android:background="@drawable/circle_background" />
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_follow_requests"
+            android:layout_marginEnd="12dp"/>
 
-        <!-- Info -->
-        <LinearLayout
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:text="Follow Requests"
+            android:textSize="16sp"
+            android:textColor="@color/black"/>
 
-            <TextView
-                android:id="@+id/requestTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Yêu cầu theo dõi"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/black" />
+        <TextView
+            android:id="@+id/requestCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/primary"
+            android:textSize="14sp"
+            android:textStyle="bold"/>
 
-            <TextView
-                android:id="@+id/requestSubtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="tiembongxixon.sg"
-                android:textSize="14sp"
-                android:textColor="@android:color/darker_gray" />
-        </LinearLayout>
-
-        <!-- Blue Dot -->
         <ImageView
-            android:id="@+id/blueDot"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_gravity="center_vertical"
-            android:src="@drawable/ic_chon"/>
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_arrow_right"
+            android:layout_marginStart="8dp"/>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

@@ -7,14 +7,16 @@ public class ChatBox {
     private String image;
     private boolean isGroup;
     private String lastMessage;
+    private Integer unreadCount;
 
     public ChatBox(String id, String name, String username, String image, boolean isGroup, String lastMessage) {
-        this.id = id;
-        this.name = name;
-        this.username = username;
-        this.image = image;
+        this.id = id != null ? id : "";
+        this.name = name != null ? name : "";
+        this.username = username; // Can be null for group chats
+        this.image = image != null ? image : "";
         this.isGroup = isGroup;
-        this.lastMessage = lastMessage;
+        this.lastMessage = lastMessage != null ? lastMessage : "";
+        this.unreadCount = 0;
     }
 
     public String getId() {
@@ -58,4 +60,14 @@ public class ChatBox {
     }
 
     public String getUsername() { return username; }
+
+    public void setUsername(String username) { this.username = username; }
+
+    public Integer getUnreadCount() {
+        return unreadCount;
+    }
+
+    public void setUnreadCount(Integer unreadCount) {
+        this.unreadCount = unreadCount;
+    }
 }

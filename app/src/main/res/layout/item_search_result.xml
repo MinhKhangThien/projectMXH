@@ -8,7 +8,7 @@
     android:gravity="center_vertical">
 
     <!-- Avatar -->
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/ivAvatar"
         android:layout_width="40dp"
         android:layout_height="40dp"

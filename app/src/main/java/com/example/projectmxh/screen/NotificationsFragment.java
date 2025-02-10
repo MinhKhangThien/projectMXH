@@ -1,5 +1,6 @@
 package com.example.projectmxh.screen;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -46,6 +47,10 @@ public class NotificationsFragment extends Fragment implements NotificationAdapt
         adapter = new NotificationAdapter(notifications, this);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(adapter);
+        View requestRow = rootView.findViewById(R.id.requestRow);
+        requestRow.setOnClickListener(v -> {
+            startActivity(new Intent(getActivity(), AcceptFollowActivity.class));
+        });
     }
 
     private void setupClickListeners() {
@@ -95,20 +100,49 @@ public class NotificationsFragment extends Fragment implements NotificationAdapt
     public void onNotificationClick(NotificationUserResponseDto notification) {
         if (!isAdded()) return;
 
-        if ("follow".equals(notification.getEntityType())) {
-            OtherProfileFragment fragment = new OtherProfileFragment();
-            Bundle args = new Bundle();
-            args.putString("userId", notification.getEntityId());
-            fragment.setArguments(args);
-
-            getParentFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.content_frame, fragment)
-                    .addToBackStack(null)
-                    .commit();
-        } else {
-            // TODO: Navigate to post detail
-            Toast.makeText(getContext(), "Navigating to post...", Toast.LENGTH_SHORT).show();
+        switch (notification.getEntityType()) {
+            case "follow":
+                navigateToUserProfile(notification.getCreatedBy().getId());
+                break;
+            case "like":
+            case "comment":
+                navigateToPost(notification.getEntityId());
+                break;
+            default:
+                Log.d("NotificationsFragment", "Unknown notification type: " + notification.getEntityType());
+                break;
         }
+    }
+
+    private void navigateToPost(String postId) {
+        if (postId == null || postId.isEmpty()) {
+            Toast.makeText(getContext(), "Invalid post", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        PostFragment fragment = PostFragment.newInstance(postId);
+        getParentFragmentManager()
+                .beginTransaction()
+                .replace(R.id.content_frame, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void navigateToUserProfile(String userId) {
+        if (userId == null || userId.isEmpty()) {
+            Toast.makeText(getContext(), "Invalid user", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        OtherProfileFragment fragment = new OtherProfileFragment();
+        Bundle args = new Bundle();
+        args.putString("userId", userId);
+        fragment.setArguments(args);
+
+        getParentFragmentManager()
+                .beginTransaction()
+                .replace(R.id.content_frame, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 }

@@ -76,7 +76,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:text="Giới thiệu"
+                    android:text="About"
                     android:textSize="16sp"
                     android:textColor="@android:color/black" />
                 <ImageView
@@ -103,7 +103,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:text="Chỉnh sửa trang cá nhân"
+                    android:text="Edit Profile"
                     android:textSize="16sp"
                     android:textColor="@android:color/black" />
                 <ImageView
@@ -131,7 +131,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:text="Đã lưu"
+                    android:text="Saved"
                     android:textSize="16sp"
                     android:textColor="@android:color/black" />
                 <ImageView
@@ -158,34 +158,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:text="Thông báo"
-                    android:textSize="16sp"
-                    android:textColor="@android:color/black" />
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_chon"
-                    android:contentDescription="Select" />
-            </LinearLayout>
-
-            <!-- Quyền riêng tư -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="12dp"
-                android:gravity="center_vertical">
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_safety"
-                    android:contentDescription="Trung tâm quyền riêng tư" />
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:text="Trung tâm quyền riêng tư"
+                    android:text="Notifications"
                     android:textSize="16sp"
                     android:textColor="@android:color/black" />
                 <ImageView
@@ -238,7 +211,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:text="Chế độ công khai/riêng tư"
+                    android:text="Privacy Account"
                     android:textSize="16sp"
                     android:textColor="@android:color/black" />
                 <Switch
@@ -255,7 +228,7 @@
         android:id="@+id/btn_logout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Đăng xuất"
+        android:text="Logout"
         android:textAllCaps="false"
         android:textSize="16sp"
         android:background="@drawable/btn_logout_background"

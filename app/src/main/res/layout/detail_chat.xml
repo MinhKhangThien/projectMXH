@@ -322,7 +322,7 @@
                 android:layout_weight="1"
                 android:text="Block User"
                 android:textSize="16sp"
-                android:textColor="@android:color/red" />
+                android:textColor="@color/red" />
 
         </LinearLayout>
     </LinearLayout>

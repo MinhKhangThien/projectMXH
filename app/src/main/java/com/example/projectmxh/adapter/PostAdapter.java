@@ -3,12 +3,14 @@ package com.example.projectmxh.adapter;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,13 +18,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.projectmxh.Model.Post;
 import com.example.projectmxh.R;
+import com.example.projectmxh.service.ApiClient;
+import com.example.projectmxh.service.ApiService;
 import com.google.android.material.button.MaterialButton;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
     private Context context;
@@ -72,6 +81,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         private ImageButton moreButton;
 
         private TextView likeCountText;
+        private TextView commentCountText;
 
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -87,6 +97,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
             likeCountText = itemView.findViewById(R.id.likeCountText);
             likeButton = itemView.findViewById(R.id.likeButton);
+            commentCountText = itemView.findViewById(R.id.commentCountText);
 
             setupClickListeners();
         }
@@ -106,13 +117,13 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 }
             });
 
-//            saveButton.setOnClickListener(v -> {
-//                int position = getAdapterPosition();
-//                if (position != RecyclerView.NO_POSITION) {
-//                    listener.onCommentClick(posts.get(position), position);
-//                }
-//            });
-
+            saveButton.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    Post post = posts.get(position);
+                    toggleSavePost(post);
+                }
+            });
 
             moreButton.setOnClickListener(v -> {
                 int position = getAdapterPosition();
@@ -166,6 +177,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             }
 
             // Handle post image
+            if (post.getPostContentUrl() == null) {
+                post.setPostContentUrl(post.getPostContent()); // Use postContent if postContentUrl is null
+            }
             String contentUrl = post.getPostContentUrl();
             if (contentUrl != null && !contentUrl.isEmpty()) {
                 postImage.setVisibility(View.VISIBLE);
@@ -181,6 +195,28 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             // Set like count and state
             likeCountText.setText(String.valueOf(post.getLikeCount()));
             updateLikeButtonState(post.isLiked());
+            updateCommentCount(post);
+
+            // Update save button state
+            updateSaveButtonState(post.isSaved());
+        }
+
+        private void updateCommentCount(Post post) {
+            ApiService apiService = ApiClient.getClientWithToken(context).create(ApiService.class);
+            apiService.getCommentCount(post.getId()).enqueue(new Callback<Integer>() {
+                @Override
+                public void onResponse(Call<Integer> call, Response<Integer> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        post.setCommentCount(response.body());
+                        commentCountText.setText(String.valueOf(response.body()));
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Integer> call, Throwable t) {
+                    commentCountText.setText("0");
+                }
+            });
         }
 
         private void updateLikeButtonState(boolean isLiked) {
@@ -197,6 +233,61 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             if (dateStr == null) return "Unknown";
             // TODO: Implement proper date formatting
             return "Just now";
+        }
+
+        private void toggleSavePost(Post post) {
+            ApiService apiService = ApiClient.getClientWithToken(context).create(ApiService.class);
+            Call<Void> call;
+
+            if (post.isSaved()) {
+                call = apiService.unsavePost(post.getId());
+            } else {
+                call = apiService.savePost(post.getId());
+            }
+
+            Log.d("PostAdapter", "Attempting to " + (post.isSaved() ? "unsave" : "save") + " post: " + post.getId());
+
+            call.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        post.setSaved(!post.isSaved());
+                        updateSaveButtonState(post.isSaved());
+                        String message = post.isSaved() ? "Post saved" : "Post unsaved";
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                        Log.d("PostAdapter", "Successfully " + message.toLowerCase());
+                    } else {
+                        try {
+                            String errorBody = response.errorBody() != null ?
+                                    response.errorBody().string() : "Unknown error";
+                            Log.e("PostAdapter", "Error: " + response.code() + " - " + errorBody);
+                            Toast.makeText(context,
+                                    "Failed to update save status: " + response.code(),
+                                    Toast.LENGTH_SHORT).show();
+                        } catch (IOException e) {
+                            Log.e("PostAdapter", "Error reading error body", e);
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Log.e("PostAdapter", "Network error", t);
+                    Toast.makeText(context,
+                            "Network error: " + t.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        private void updateSaveButtonState(boolean isSaved) {
+            saveButton.setImageResource(isSaved ?
+                    R.drawable.ic_bookmark_filled :
+                    R.drawable.ic_bookmark);
+
+            saveButton.setColorFilter(isSaved ?
+                    context.getColor(R.color.black) :
+                    context.getColor(R.color.gray));
         }
     }
 }

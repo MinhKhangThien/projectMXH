@@ -126,6 +126,17 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_comment3"
             android:contentDescription="Comment on Post"/>
+
+        <TextView
+            android:id="@+id/commentCountText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:layout_marginStart="-4dp"
+            android:layout_marginEnd="4dp"/>
+
     </LinearLayout>
 
     <!-- Save button aligned to end -->

@@ -1,8 +1,10 @@
 package com.example.projectmxh.service;
 
+import com.example.projectmxh.Model.ChatList;
 import com.example.projectmxh.Model.Comment;
 import com.example.projectmxh.Model.GroupChat;
 import com.example.projectmxh.Model.Message;
+import com.example.projectmxh.Model.SavedPost;
 import com.example.projectmxh.config.CloudinaryConfig;
 import com.example.projectmxh.dto.AppUserDto;
 import com.example.projectmxh.dto.GroupChatDto;
@@ -30,6 +32,7 @@ import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -53,10 +56,19 @@ public interface ApiService {
     @GET("/api/v1/user/search")
     Call<List<AppUserDto>> searchUsers(@Query("displayName") String displayName);
 
+    @GET("/api/v1/user/email/{username}")
+    Call<AppUserDto> getUserByEmail(@Path("username") String username);
+
+    @PUT("/api/v1/user/{id}/{type}")
+    Call<Void> changeAccountType(@Path("id") String userId, @Path("type") String accountType);
+
 
     //post
     @GET("/api/v1/post/posts/{userId}")
     Call<List<Post>> getUserPosts(@Path("userId") String userId);
+
+    @GET("/api/v1/post/{postId}")
+    Call<Post> getPostById(@Path("postId") String postId);
 
     @POST("/api/v1/post")
     Call<String> createPost(@Body CreatePostRequest createPostRequest);
@@ -66,6 +78,9 @@ public interface ApiService {
 
     @GET("/api/v1/post")
     Call<List<Post>> getMyPosts();
+
+    @GET("/api/v1/post/count/{userId}")
+    Call<Integer> getUserPostCount(@Path("userId") String userId);
 
     // like
     @POST("/api/v1/post/like/{postId}")
@@ -107,6 +122,18 @@ public interface ApiService {
     Call<Integer> getReplyCount(@Path("commentId") String commentId);
 
 
+    //save post
+    @POST("/api/v1/saved-posts/{postId}")
+    Call<Void> savePost(@Path("postId") String postId);
+
+    @DELETE("/api/v1/saved-posts/{postId}")
+    Call<Void> unsavePost(@Path("postId") String postId);
+
+    @GET("/api/v1/saved-posts")
+    Call<List<SavedPost>> getSavedPosts();
+
+
+
     //Chat
     @GET("/api/v1/chat/private-messages/{senderName}/{receiverName}")
     Call<List<Message>> getPrivateMessages(
@@ -114,29 +141,43 @@ public interface ApiService {
             @Path("receiverName") String receiverName
     );
 
+    @GET("/api/v1/chat/chat-list")
+    Call<List<ChatList>> getChatList();
+
+    @POST("/api/v1/chat/mark-as-read")
+    Call<Void> markAsRead(@Query("user") String user, @Query("contact") String contact);
+
     @GET("/api/v1/chat/public-messages")
     Call<List<Message>> getPublicMessages();
 
     // Group chat
     @POST("/api/v1/chat/create-group-chat")
-    Call<GroupChatDto> createGroupChat(@Body List<String> userIds);
+    Call<GroupChatDto> createGroupChat(
+            @Body List<String> userIds,  // Changed from UUID to String
+            @Query("groupName") String groupName,
+            @Query("groupImage") String groupImage
+    );
 
     @GET("/api/v1/chat/group-chats")
     Call<List<GroupChat>> getGroupChats();
 
     @GET("/api/v1/chat/group-chat/{groupId}/messages")
-    Call<List<Message>> getGroupChatMessages(@Path("groupId") String groupId);
+    Call<List<Message>> getGroupChatMessages(@Path("groupId") UUID groupId);
 
     @GET("/api/v1/chat/group-chat/{groupId}/users")
     Call<List<AppUserDto>> getGroupChatUsers(@Path("groupId") String groupId);
 
     @POST("/api/v1/chat/add-user-to-group-chat")
-    Call<String> addUserToGroupChat(@Query("groupId") String groupId,
-                                    @Query("userId") String userId);
+    Call<String> addUserToGroupChat(
+            @Query("groupId") String groupId,
+            @Query("userId") String userId
+    );
 
     @POST("/api/v1/chat/remove-user-from-group-chat")
-    Call<String> removeUserFromGroupChat(@Query("groupId") String groupId,
-                                         @Query("userId") String userId);
+    Call<String> removeUserFromGroupChat(
+            @Query("groupId") String groupId,
+            @Query("userId") String userId
+    );
 
 
     // Follow
@@ -151,6 +192,21 @@ public interface ApiService {
 
     @DELETE("/api/v1/user/follow/{userId}")
     Call<Void> unfollowUser(@Path("userId") String userId);
+
+    @GET("/api/v1/user/follow/{userId}/followers/count")
+    Call<Long> getFollowersCount(@Path("userId") String userId);
+
+    @GET("/api/v1/user/follow/{userId}/following/count")
+    Call<Long> getFollowingCount(@Path("userId") String userId);
+
+    @GET("/api/v1/user/follow/pending-followers")
+    Call<List<PendingFollowRequest>> getPendingFollowRequests();
+
+    @DELETE("/api/v1/user/follow/pending/{userId}")
+    Call<String> deletePendingRequest(@Path("userId") String userId);
+
+    @PUT("/api/v1/user/follow/requests/{requestId}/accept")
+    Call<Void> acceptPendingRequest(@Path("requestId") String requestId);
 
 
     // Notification

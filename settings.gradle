@@ -1,8 +1,10 @@
 pluginManagement {
     repositories {
+        gradlePluginPortal()
         google()
         mavenCentral()
-        gradlePluginPortal()
+        jcenter()
+        maven { url 'https://jitpack.io' }
     }
 }
 dependencyResolutionManagement {
@@ -10,7 +12,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://raw.githubusercontent.com/webrtc-sdk/webrtc/master/repo' }
     }
 }
+
 rootProject.name = "projectMXH"
 include ':app'

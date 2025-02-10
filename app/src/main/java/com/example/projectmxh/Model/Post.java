@@ -7,6 +7,7 @@ public class Post {
     private String caption;
     private String postType;
     private String postContentUrl;
+    private String postContent = "";
     private String thumbnailUrl;
     private String createdAt;
     private String updatedAt;
@@ -15,11 +16,14 @@ public class Post {
 
     private boolean isLiked;
     private int likeCount;
+    private int commentCount;
+    private boolean isSaved;
 
-    public Post(String id, String caption, String postType, String postContentUrl, String thumbnailUrl, String createdAt, String updatedAt, User user, List<User> taggedUser, boolean isLiked, int likeCount) {
+    public Post(String id, String caption, String postType, String postContent, String postContentUrl, String thumbnailUrl, String createdAt, String updatedAt, User user, List<User> taggedUser, boolean isLiked, int likeCount) {
         this.id = id;
         this.caption = caption;
         this.postType = postType;
+        this.postContent = postContent;
         this.postContentUrl = postContentUrl;
         this.thumbnailUrl = thumbnailUrl;
         this.createdAt = createdAt;
@@ -28,6 +32,8 @@ public class Post {
         this.taggedUser = taggedUser;
         this.isLiked = false;
         this.likeCount = 0;
+        this.commentCount = 0;
+        this.isSaved = false;
     }
 
     // Getters and Setters
@@ -63,6 +69,15 @@ public class Post {
 
     public int getLikeCount() { return likeCount; }
     public void setLikeCount(int likeCount) { this.likeCount = likeCount; }
+
+    public int getCommentCount() { return commentCount; }
+    public void setCommentCount(int commentCount) { this.commentCount = commentCount; }
+
+    public boolean isSaved() { return isSaved; }
+    public void setSaved(boolean saved) { isSaved = saved; }
+
+    public String getPostContent() { return postContent; }
+    public void setPostContent(String postContent) { this.postContent = postContent; }
 
 
 

@@ -5,11 +5,52 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Top Bar -->
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        android:background="@color/white"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/logoIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/logo"
+            android:contentDescription="Logo"
+            android:layout_marginEnd="16dp" />
+
+        <EditText
+            android:id="@+id/searchBar"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@drawable/search_bar_bg"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawablePadding="8dp"
+            android:hint="Find..."
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:singleLine="true" />
+
+        <ImageView
+            android:id="@+id/messageButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_mess"
+            android:layout_marginStart="16dp"
+            android:contentDescription="Messages" />
+    </LinearLayout>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="64dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -23,7 +64,7 @@
                 layout="@layout/post_creation_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"/>
+                android:layout_marginTop="0dp"/>
 
             <!-- RecyclerView for posts -->
             <androidx.recyclerview.widget.RecyclerView
@@ -34,6 +75,15 @@
 
         </LinearLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- Search Results -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/searchResultsList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="72dp"
+        android:background="@color/white"
+        android:visibility="gone"/>
 
     <!-- Loading View -->
     <ProgressBar

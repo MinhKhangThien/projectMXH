@@ -1,5 +1,6 @@
 package com.example.projectmxh.screen;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,7 +35,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity implements WebSocketConfig.WebSocketMessageListener{
     private WebSocketConfig webSocket;
     private ChatAdapter chatAdapter;
     private List<Message> messages;
@@ -55,6 +57,11 @@ public class ChatActivity extends AppCompatActivity {
         initializeViews();
         setupClickListeners();
         setupChat();
+        // Mark messages as read when opening chat
+        getCurrentUserAsync(username -> {
+            currentUser = username;
+            markMessagesAsRead();
+        });
     }
 
     private void initializeViews() {
@@ -64,10 +71,12 @@ public class ChatActivity extends AppCompatActivity {
         backIcon = findViewById(R.id.backIcon);
         avatar = findViewById(R.id.avatar);
         userName = findViewById(R.id.userName);
+        ImageView videoCallIcon = findViewById(R.id.videoCallIcon);
+        videoCallIcon.setOnClickListener(v -> startVideoCall());
     }
 
     private void setupClickListeners() {
-        backIcon.setOnClickListener(v -> finish());
+        backIcon.setOnClickListener(v -> navigateToMessageActivity());
 
         sendIcon.setOnClickListener(v -> {
             String message = messageEditText.getText().toString().trim();
@@ -76,6 +85,12 @@ public class ChatActivity extends AppCompatActivity {
                 messageEditText.setText("");
             }
         });
+    }
+
+    private void navigateToMessageActivity() {
+        Intent intent = new Intent(ChatActivity.this, MessageActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private void setupChat() {
@@ -91,12 +106,13 @@ public class ChatActivity extends AppCompatActivity {
         // Get current user first, then setup adapter and WebSocket
         getCurrentUserAsync(username -> {
             currentUser = username;
-            // Initialize adapter after we have currentUser
             chatAdapter = new ChatAdapter(messages, currentUser);
             chatMessages.setLayoutManager(new LinearLayoutManager(this));
             chatMessages.setAdapter(chatAdapter);
 
+            // Initialize WebSocket after we have currentUser
             webSocket = new WebSocketConfig(this);
+            webSocket.connectAndSubscribe(currentUser); // Add this line
             loadMessages();
         });
     }
@@ -187,11 +203,33 @@ public class ChatActivity extends AppCompatActivity {
         webSocket.send("/app/private-message", jsonMessage);
     }
 
+    @Override
     public void handleNewMessage(String messageJson) {
-        Message message = new Gson().fromJson(messageJson, Message.class);
-        messages.add(message);
-        chatAdapter.notifyItemInserted(messages.size() - 1);
-        scrollToBottom();
+        Log.d("ChatActivity", "Received message: " + messageJson);
+
+        try {
+            Message message = new Gson().fromJson(messageJson, Message.class);
+
+            // Check if message belongs to this chat
+            if ((message.getSenderName().equals(currentUser) &&
+                    message.getReceiverName().equals(receiverUser)) ||
+                    (message.getSenderName().equals(receiverUser) &&
+                            message.getReceiverName().equals(currentUser))) {
+
+                runOnUiThread(() -> {
+                    messages.add(message);
+                    chatAdapter.notifyItemInserted(messages.size() - 1);
+                    scrollToBottom();
+
+                    // Mark as read if we're the receiver
+                    if (message.getSenderName().equals(receiverUser)) {
+                        markMessagesAsRead();
+                    }
+                });
+            }
+        } catch (Exception e) {
+            Log.e("ChatActivity", "Error parsing message", e);
+        }
     }
 
     private void scrollToBottom() {
@@ -206,5 +244,53 @@ public class ChatActivity extends AppCompatActivity {
         if (webSocket != null) {
             webSocket.close();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (webSocket != null) {
+            webSocket.close();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (currentUser != null) {
+            webSocket = new WebSocketConfig(this);
+            webSocket.connectAndSubscribe(currentUser);
+        }
+    }
+
+    private void markMessagesAsRead() {
+        if (currentUser == null || receiverUser == null) return;
+
+        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
+        apiService.markAsRead(currentUser, receiverUser).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    // Use LocalBroadcastManager to send the broadcast
+                    Intent intent = new Intent("MESSAGES_READ");
+                    intent.putExtra("contactUsername", receiverUser);
+                    LocalBroadcastManager.getInstance(ChatActivity.this)
+                            .sendBroadcast(intent);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("ChatActivity", "Network error marking messages as read", t);
+            }
+        });
+    }
+
+    private void startVideoCall() {
+//        if (receiverUser == null) return;
+//
+//        Intent intent = new Intent(this, VideoCallActivity.class);
+//        intent.putExtra("targetUser", receiverUser);
+//        startActivity(intent);
     }
 }

@@ -61,6 +61,16 @@
         </activity>
 
         <activity
+            android:name=".screen.GroupChatActivity"
+            android:exported="false">
+        </activity>
+
+        <activity
+            android:name=".screen.AcceptFollowActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ProjectMXH"/>
+
+        <activity
             android:name=".screen.MessageActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat">
@@ -92,10 +102,20 @@
             android:theme="@style/Theme.AppCompat" />
 
         <activity
-            android:name=".screen.SettingsActivity"
+            android:name=".screen.SettingsFragment"
             android:exported="false"
             android:theme="@style/Theme.AppCompat"/>
 
+        <receiver
+            android:name=".Components.MessageReadReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="MESSAGES_READ" />
+            </intent-filter>
+        </receiver>
+
     </application>
+
+
 
 </manifest>

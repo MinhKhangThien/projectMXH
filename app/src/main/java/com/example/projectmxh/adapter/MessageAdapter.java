@@ -1,11 +1,14 @@
 package com.example.projectmxh.adapter;
 
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
@@ -34,14 +37,38 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         ChatBox chatBox = chatBoxes.get(position);
+        if (chatBox == null) {
+            Log.e("MessageAdapter", "Null chat box at position " + position);
+            return;
+        }
+
         holder.bind(chatBox);
 
         holder.itemView.setOnClickListener(v -> {
             if (chatBox.isGroup()) {
+                if (chatBox.getId() == null) {
+                    Log.e("MessageAdapter", "Group chat has null ID");
+                    Toast.makeText(v.getContext(),
+                            "Invalid group chat", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 Intent intent = new Intent(v.getContext(), GroupChatActivity.class);
                 intent.putExtra("groupId", chatBox.getId());
+                intent.putExtra("groupName", chatBox.getName());
+                intent.putExtra("groupImage", chatBox.getImage());
+                Log.d("MessageAdapter", "Opening group chat: " + chatBox.getName());
+                Log.d("MessageAdapter", "Opening group chat: " + chatBox.getId());
+
                 v.getContext().startActivity(intent);
             } else {
+                if (chatBox.getUsername() == null) {
+                    Log.e("MessageAdapter", "Private chat has null username");
+                    Toast.makeText(v.getContext(),
+                            "Invalid chat", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 Intent intent = new Intent(v.getContext(), ChatActivity.class);
                 intent.putExtra("receiverName", chatBox.getUsername());
                 intent.putExtra("receiverFullName", chatBox.getName());
@@ -61,6 +88,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         private final TextView name;
         private final TextView lastMessage;
         private final ImageView groupIndicator;
+        private TextView unreadCount;
 
         MessageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -68,6 +96,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             name = itemView.findViewById(R.id.senderName);
             lastMessage = itemView.findViewById(R.id.latestMessage);
             groupIndicator = itemView.findViewById(R.id.groupIndicator);
+            unreadCount = itemView.findViewById(R.id.unreadCount);
         }
 
         void bind(ChatBox chatBox) {
@@ -75,14 +104,25 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             lastMessage.setText(chatBox.getLastMessage());
             groupIndicator.setVisibility(chatBox.isGroup() ? View.VISIBLE : View.GONE);
 
-            int defaultImage = chatBox.isGroup() ?
-                    R.drawable.ic_groupchat :
-                    R.drawable.avatar;
+            // Load image with error handling
+            if (chatBox.getImage() != null && !chatBox.getImage().isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(chatBox.getImage())
+                        .placeholder(chatBox.isGroup() ? R.drawable.ic_groupchat : R.drawable.avatar)
+                        .error(chatBox.isGroup() ? R.drawable.ic_groupchat : R.drawable.avatar)
+                        .into(avatar);
+            } else {
+                // Set default image
+                avatar.setImageResource(chatBox.isGroup() ? R.drawable.ic_groupchat : R.drawable.avatar);
+            }
 
-            Glide.with(itemView.getContext())
-                    .load(chatBox.getImage())
-                    .placeholder(defaultImage)
-                    .into(avatar);
+            // Show unread count if greater than 0
+            if (chatBox.getUnreadCount() > 0) {
+                unreadCount.setVisibility(View.VISIBLE);
+                unreadCount.setText(String.valueOf(chatBox.getUnreadCount()));
+            } else {
+                unreadCount.setVisibility(View.GONE);
+            }
         }
     }
 }

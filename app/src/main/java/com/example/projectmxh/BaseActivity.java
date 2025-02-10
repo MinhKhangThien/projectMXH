@@ -6,8 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.example.projectmxh.screen.NotificationsFragment;
-import com.example.projectmxh.screen.OtherProfileFragment;
 import com.example.projectmxh.screen.ProfileFragment;
+import com.example.projectmxh.screen.SettingsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class BaseActivity extends AppCompatActivity {
@@ -43,7 +43,7 @@ public class BaseActivity extends AppCompatActivity {
                 loadFragment(new NotificationsFragment());
                 return true;
             } else if (itemId == R.id.nav_menu) {
-                //loadFragment(new MenuFragment());
+                loadFragment(new SettingsFragment());
                 return true;
             }
             return false;

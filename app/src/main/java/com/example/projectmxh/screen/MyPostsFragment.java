@@ -106,10 +106,13 @@ public class MyPostsFragment extends Fragment implements PostAdapter.PostClickLi
     }
 
     private void updateLikeCount(Post post, int position) {
+        if (!isAdded()) return;
+
         ApiService apiService = ApiClient.getClientWithToken(requireContext()).create(ApiService.class);
         apiService.getLikeCount(post.getId()).enqueue(new Callback<Integer>() {
             @Override
             public void onResponse(Call<Integer> call, Response<Integer> response) {
+                if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
                     post.setLikeCount(response.body());
                     postAdapter.notifyItemChanged(position);
@@ -118,6 +121,7 @@ public class MyPostsFragment extends Fragment implements PostAdapter.PostClickLi
 
             @Override
             public void onFailure(Call<Integer> call, Throwable t) {
+                if (!isAdded()) return;
                 Log.e("MyPostsFragment", "Error updating like count: " + t.getMessage());
             }
         });

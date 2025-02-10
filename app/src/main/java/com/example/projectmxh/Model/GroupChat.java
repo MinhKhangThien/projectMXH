@@ -8,15 +8,16 @@ public class GroupChat {
     private String id;
     private String name;
     private String image;
-    private List<UserGroup> userGroups;
-    private List<Message> messages;
+    private String createdAt;
+    private String updatedAt;
 
-    public GroupChat(String id, String name, String image, List<UserGroup> userGroups, List<Message> messages) {
+    // Update constructor
+    public GroupChat(String id, String name, String image, String createdAt, String updatedAt) {
         this.id = id;
         this.name = name;
         this.image = image;
-        this.userGroups = userGroups;
-        this.messages = messages;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public String getId() {
@@ -43,19 +44,19 @@ public class GroupChat {
         this.image = image;
     }
 
-    public List<UserGroup> getUserGroups() {
-        return userGroups;
+    public String getCreatedAt() {
+        return createdAt;
     }
 
-    public void setUserGroups(List<UserGroup> userGroups) {
-        this.userGroups = userGroups;
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public List<Message> getMessages() {
-        return messages;
+    public String getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setMessages(List<Message> messages) {
-        this.messages = messages;
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

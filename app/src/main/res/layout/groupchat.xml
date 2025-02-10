@@ -59,6 +59,7 @@
                 android:layout_height="wrap_content"
                 android:text="12 thành viên đang hoạt động"
                 android:textSize="14sp"
+                android:visibility="gone"
                 android:textColor="@color/gray" />
         </LinearLayout>
 
