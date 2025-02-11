@@ -70,6 +70,14 @@
                 android:background="@drawable/rounded_edittext"
                 android:layout_marginBottom="16dp" />
 
+            <Spinner
+                android:id="@+id/spinner_gender"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:background="@drawable/rounded_edittext"
+                android:layout_marginBottom="16dp" />
+
             <!-- Trường nhập Email -->
             <EditText
                 android:id="@+id/et_email"

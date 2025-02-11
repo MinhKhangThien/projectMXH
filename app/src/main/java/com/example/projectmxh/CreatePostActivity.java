@@ -2,11 +2,13 @@ package com.example.projectmxh;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -17,9 +19,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.projectmxh.Components.OptionAdapter;
 import com.example.projectmxh.Components.OptionItem;
 import com.example.projectmxh.config.CloudinaryConfig;
+import com.example.projectmxh.dto.AppUserDto;
 import com.example.projectmxh.dto.request.CreatePostRequest;
 import com.example.projectmxh.dto.response.CloudinaryResponse;
 import com.example.projectmxh.service.ApiClient;
@@ -36,6 +40,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 import okhttp3.MediaType;
 
 import okhttp3.MediaType;
@@ -48,6 +54,8 @@ import retrofit2.Response;
 public class CreatePostActivity extends AppCompatActivity {
     private static final int RESULT_POST_CREATED = 101;
     public static final int REQUEST_CREATE_POST = 100;
+    private CircleImageView profileImage;
+    private TextView userNameText;
 
     private ProgressDialog progressDialog;
 
@@ -76,6 +84,7 @@ public class CreatePostActivity extends AppCompatActivity {
         setupBottomSheet();
         setupPhotoPicker();
         setupListeners();
+        loadUserProfile();
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
@@ -87,6 +96,8 @@ public class CreatePostActivity extends AppCompatActivity {
         optionsRecyclerView = findViewById(R.id.optionsRecyclerView);
         bottomSheetView = findViewById(R.id.bottomSheet);
         privacySpinner = findViewById(R.id.privacySpinner);
+        profileImage = findViewById(R.id.profileImage);
+        userNameText = findViewById(R.id.userNameText);
 
         // Setup privacy spinner
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -101,6 +112,32 @@ public class CreatePostActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
+    }
+
+    private void loadUserProfile() {
+        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
+        apiService.getMe().enqueue(new Callback<AppUserDto>() {
+            @Override
+            public void onResponse(Call<AppUserDto> call, Response<AppUserDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    AppUserDto user = response.body();
+                    userNameText.setText(user.getDisplayName());
+                    if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
+                        Glide.with(CreatePostActivity.this)
+                                .load(user.getProfilePicture())
+                                .placeholder(R.drawable.ic_avatar)
+                                .error(R.drawable.ic_avatar)
+                                .into(profileImage);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AppUserDto> call, Throwable t) {
+                Toast.makeText(CreatePostActivity.this,
+                        "Failed to load profile", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setupBottomSheet() {
@@ -274,25 +311,34 @@ public class CreatePostActivity extends AppCompatActivity {
 
     private void createPostWithData(String caption, String type, String imageUrl) {
         CreatePostRequest request = new CreatePostRequest(caption, type, imageUrl);
-        
+
         ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
-        apiService.createPost(request).enqueue(new Callback<String>() {
+        apiService.createPost(request).enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
+            public void onResponse(Call<Void> call, Response<Void> response) {
                 hideProgressDialog();
                 if (response.isSuccessful()) {
-                    Toast.makeText(CreatePostActivity.this, "Post created successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CreatePostActivity.this,
+                            "Post created successfully", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     finish();
                 } else {
-                    handleError("Failed to create post");
+                    try {
+                        String errorBody = response.errorBody() != null ?
+                                response.errorBody().string() : "Unknown error";
+                        Log.e("CreatePost", "Error: " + errorBody);
+                        handleError("Failed to create post: " + errorBody);
+                    } catch (IOException e) {
+                        Log.e("CreatePost", "Error reading error body", e);
+                        handleError("Failed to create post");
+                    }
                 }
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("CreatePost", "Network error", t);
                 handleError("Network error: " + t.getMessage());
-                finish();
             }
         });
     }

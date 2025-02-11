@@ -1,5 +1,6 @@
 package com.example.projectmxh.adapter;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +19,11 @@ import java.util.List;
 import java.util.Set;
 
 public class UserSelectionAdapter extends RecyclerView.Adapter<UserSelectionAdapter.UserViewHolder> {
+    private static final String TAG = "UserSelectionAdapter";
     private List<AppUserDto> users;
-    private final Set<AppUserDto> selectedUsers = new HashSet<>();
+    private final Set<AppUserDto> selectedUsers;
     private final UserSelectionListener listener;
+
 
     public interface UserSelectionListener {
         void onUserSelected(AppUserDto user);
@@ -28,10 +31,12 @@ public class UserSelectionAdapter extends RecyclerView.Adapter<UserSelectionAdap
 
     public UserSelectionAdapter(List<AppUserDto> users, UserSelectionListener listener) {
         this.users = users;
+        this.selectedUsers = new HashSet<>();
         this.listener = listener;
     }
 
     public void updateUsers(List<AppUserDto> newUsers) {
+        Log.d(TAG, "Updating users list: " + newUsers.size());
         this.users = newUsers;
         notifyDataSetChanged();
     }
@@ -47,7 +52,7 @@ public class UserSelectionAdapter extends RecyclerView.Adapter<UserSelectionAdap
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         AppUserDto user = users.get(position);
-        holder.bind(user, selectedUsers.contains(user));
+        holder.bind(user, selectedUsers.contains(user));  // Pass selection state
     }
 
     @Override
@@ -72,17 +77,21 @@ public class UserSelectionAdapter extends RecyclerView.Adapter<UserSelectionAdap
             View.OnClickListener clickListener = v -> {
                 boolean newState = !selectionCheckBox.isChecked();
                 selectionCheckBox.setChecked(newState);
+
                 if (newState) {
                     selectedUsers.add(user);
                 } else {
                     selectedUsers.remove(user);
                 }
-                listener.onUserSelected(user);
+
+                // Notify listener immediately after state change
+                if (listener != null) {
+                    listener.onUserSelected(user);
+                }
             };
 
-            // Set click listener for both checkbox and item
-            selectionCheckBox.setOnClickListener(clickListener);
             itemView.setOnClickListener(clickListener);
+            selectionCheckBox.setOnClickListener(clickListener);
         }
     }
 }

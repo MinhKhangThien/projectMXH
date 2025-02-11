@@ -129,17 +129,19 @@ public class GroupChatActivity extends AppCompatActivity implements WebSocketCon
 
     private void setupClickListeners() {
         backIcon.setOnClickListener(v -> finish());
+
         sendIcon.setOnClickListener(v -> {
             String message = messageEditText.getText().toString().trim();
             if (!message.isEmpty()) {
                 sendMessage(message);
-                messageEditText.setText("");
             }
         });
 
         groupSettings.setOnClickListener(v -> {
             Intent intent = new Intent(this, GroupChatDetailActivity.class);
             intent.putExtra("groupId", groupId);
+            intent.putExtra("groupName", groupName.getText().toString());
+            intent.putExtra("groupImage", getIntent().getStringExtra("groupImage"));
             startActivity(intent);
         });
     }

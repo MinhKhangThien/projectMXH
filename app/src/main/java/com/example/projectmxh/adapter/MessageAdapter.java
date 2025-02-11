@@ -20,10 +20,12 @@ import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
+    private static final String TAG = "MessageAdapter";
     private final List<ChatBox> chatBoxes;
 
     public MessageAdapter(List<ChatBox> chatBoxes) {
         this.chatBoxes = chatBoxes;
+        Log.d(TAG, "MessageAdapter created with " + chatBoxes.size() + " chat boxes");
     }
 
     @NonNull
@@ -41,7 +43,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             Log.e("MessageAdapter", "Null chat box at position " + position);
             return;
         }
-
+        Log.d(TAG, "Binding chat box at position " + position +
+                " for user: " + chatBox.getUsername());
         holder.bind(chatBox);
 
         holder.itemView.setOnClickListener(v -> {
@@ -70,6 +73,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 }
 
                 Intent intent = new Intent(v.getContext(), ChatActivity.class);
+                intent.putExtra("receiverId", chatBox.getId());
                 intent.putExtra("receiverName", chatBox.getUsername());
                 intent.putExtra("receiverFullName", chatBox.getName());
                 intent.putExtra("avatarUrl", chatBox.getImage());

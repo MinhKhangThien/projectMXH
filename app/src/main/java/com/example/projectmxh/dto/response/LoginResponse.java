@@ -2,16 +2,22 @@ package com.example.projectmxh.dto.response;
 
 public class LoginResponse {
     private String token;
-    private String refreshtoken;
-    private long expireIn;
+    private String role;
 
-    public LoginResponse(String token, String refreshtoken, long expireIn) {
+    public LoginResponse(String token, String role) {
         this.token = token;
-        this.refreshtoken = refreshtoken;
-        this.expireIn = expireIn;
+        this.role = role;
     }
 
     public String getToken() {
         return token;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

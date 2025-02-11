@@ -1,9 +1,13 @@
 package com.example.projectmxh.screen;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -40,14 +44,22 @@ public class ChatActivity extends AppCompatActivity implements WebSocketConfig.W
     private ChatAdapter chatAdapter;
     private List<Message> messages;
     private String currentUser;
-    private String receiverUser;
+    private String receiverUser, receiverId;
 
     // UI Elements
     private RecyclerView chatMessages;
     private EditText messageEditText;
-    private ImageView sendIcon, backIcon;
+    private ImageView sendIcon, backIcon, detailIcon;
     private CircleImageView avatar;
     private TextView userName;
+
+    private BroadcastReceiver blockStatusReceiver;
+    private boolean isBlockedByUser = false;
+    private View messageInputLayout;
+    private View blockedMessageLayout;
+
+    private boolean hasBlockedUser = false;
+    private View youBlockedMessageLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,11 +68,68 @@ public class ChatActivity extends AppCompatActivity implements WebSocketConfig.W
 
         initializeViews();
         setupClickListeners();
-        setupChat();
+        // Get receiverEmail first
+        String receiverEmail = getIntent().getStringExtra("receiverName");
+        if (receiverEmail != null) {
+            // Fetch user details using email
+            ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
+            apiService.getUserByEmail(receiverEmail).enqueue(new Callback<AppUserDto>() {
+                @Override
+                public void onResponse(Call<AppUserDto> call, Response<AppUserDto> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        AppUserDto user = response.body();
+                        receiverId = user.getId(); // Now we have the correct ID
+                        receiverUser = user.getUsername();
+
+                        // Update UI with user details
+                        userName.setText(user.getDisplayName());
+                        if (user.getProfilePicture() != null) {
+                            Glide.with(ChatActivity.this)
+                                    .load(user.getProfilePicture())
+                                    .placeholder(R.drawable.ic_avatar)
+                                    .into(avatar);
+                        }
+
+                        checkBlockStatus();
+                        // Now setup chat after getting user details
+                        setupChatWithUser();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<AppUserDto> call, Throwable t) {
+                    Log.e("ChatActivity", "Failed to get user details", t);
+                    Toast.makeText(ChatActivity.this,
+                            "Failed to load user details", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            });
+        }
+
         // Mark messages as read when opening chat
         getCurrentUserAsync(username -> {
             currentUser = username;
             markMessagesAsRead();
+        });
+
+        registerBlockStatusReceiver();
+    }
+
+    private void setupChatWithUser() {
+        messages = new ArrayList<>();
+        getCurrentUserAsync(username -> {
+            currentUser = username;
+            chatAdapter = new ChatAdapter(messages, currentUser);
+            chatMessages.setLayoutManager(new LinearLayoutManager(this));
+            chatMessages.setAdapter(chatAdapter);
+
+            webSocket = new WebSocketConfig(this);
+            webSocket.connectAndSubscribe(currentUser);
+            loadMessages();
+
+            // Check block status after getting user details
+            checkIfBlocked();
+            Log.d("ChatActivity", "Chat setup complete for user: " + currentUser);
         });
     }
 
@@ -69,10 +138,91 @@ public class ChatActivity extends AppCompatActivity implements WebSocketConfig.W
         messageEditText = findViewById(R.id.messageEditText);
         sendIcon = findViewById(R.id.sendIcon);
         backIcon = findViewById(R.id.backIcon);
+        detailIcon = findViewById(R.id.detail);
         avatar = findViewById(R.id.avatar);
         userName = findViewById(R.id.userName);
         ImageView videoCallIcon = findViewById(R.id.videoCallIcon);
         videoCallIcon.setOnClickListener(v -> startVideoCall());
+        messageInputLayout = findViewById(R.id.messageInput);
+        blockedMessageLayout = findViewById(R.id.blockedMessageLayout);
+
+        messageInputLayout = findViewById(R.id.messageInput);
+        blockedMessageLayout = findViewById(R.id.blockedMessageLayout);
+        youBlockedMessageLayout = findViewById(R.id.youBlockedMessageLayout);
+    }
+
+    private void checkBlockStatus() {
+        if (receiverId == null) {
+            Log.e("ChatActivity", "Cannot check block status: receiverId is null");
+            return;
+        }
+
+        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
+
+        // First check if we're blocked by the other user
+        apiService.isUserBlocked(receiverId).enqueue(new Callback<Boolean>() {
+            @Override
+            public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    isBlockedByUser = response.body();
+                    // Then check if we blocked them
+                    checkIfWeBlockedUser();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Boolean> call, Throwable t) {
+                Log.e("ChatActivity", "Failed to check if blocked by user", t);
+            }
+        });
+    }
+
+    private void checkIfWeBlockedUser() {
+        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
+
+        apiService.isBlockedUser(receiverId).enqueue(new Callback<Boolean>() {
+            @Override
+            public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    hasBlockedUser = response.body();
+                    updateBlockUI();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Boolean> call, Throwable t) {
+                Log.e("ChatActivity", "Failed to check if we blocked user", t);
+            }
+        });
+    }
+
+    private void updateBlockUI() {
+        runOnUiThread(() -> {
+            if (messageInputLayout != null &&
+                    blockedMessageLayout != null &&
+                    youBlockedMessageLayout != null) {
+
+                if (isBlockedByUser) {
+                    // We are blocked by the other user
+                    messageInputLayout.setVisibility(View.GONE);
+                    blockedMessageLayout.setVisibility(View.VISIBLE);
+                    youBlockedMessageLayout.setVisibility(View.GONE);
+                } else if (hasBlockedUser) {
+                    // We blocked the other user
+                    messageInputLayout.setVisibility(View.GONE);
+                    blockedMessageLayout.setVisibility(View.GONE);
+                    youBlockedMessageLayout.setVisibility(View.VISIBLE);
+                } else {
+                    // No blocking in either direction
+                    messageInputLayout.setVisibility(View.VISIBLE);
+                    blockedMessageLayout.setVisibility(View.GONE);
+                    youBlockedMessageLayout.setVisibility(View.GONE);
+                }
+
+                Log.d("ChatActivity", "Updated UI - Blocked by user: " + isBlockedByUser +
+                        ", Has blocked user: " + hasBlockedUser);
+            }
+        });
     }
 
     private void setupClickListeners() {
@@ -85,6 +235,19 @@ public class ChatActivity extends AppCompatActivity implements WebSocketConfig.W
                 messageEditText.setText("");
             }
         });
+
+        detailIcon.setOnClickListener(v -> {
+            if (receiverId != null) {
+                Intent intent = new Intent(this, DetailChatActivity.class);
+                intent.putExtra("userId", receiverId);
+                intent.putExtra("username", receiverUser);
+                intent.putExtra("fullname", userName.getText().toString());
+                intent.putExtra("avatarUrl", getIntent().getStringExtra("avatarUrl"));
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Could not open chat details", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void navigateToMessageActivity() {
@@ -94,6 +257,8 @@ public class ChatActivity extends AppCompatActivity implements WebSocketConfig.W
     }
 
     private void setupChat() {
+        receiverId = getIntent().getStringExtra("receiverId");
+        Log.d("ChatActivity", "Receiver ID: " + receiverId);
         receiverUser = getIntent().getStringExtra("receiverName");
         String receiverFullname = getIntent().getStringExtra("receiverFullName");
         String avatarUrl = getIntent().getStringExtra("avatarUrl");
@@ -238,9 +403,80 @@ public class ChatActivity extends AppCompatActivity implements WebSocketConfig.W
         }
     }
 
+    private void registerBlockStatusReceiver() {
+        blockStatusReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if ("USER_BLOCKED".equals(intent.getAction())) {
+                    String blockedUserId = intent.getStringExtra("blockedUserId");
+                    Log.d("ChatActivity", "Received block broadcast for userId: " + blockedUserId);
+                    if (blockedUserId != null && blockedUserId.equals(receiverId)) {
+                        Log.d("ChatActivity", "Updating UI for blocked user");
+                        updateBlockedUI(true);
+                    }
+                }
+            }
+        };
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(blockStatusReceiver, new IntentFilter("USER_BLOCKED"));
+        Log.d("ChatActivity", "Block status receiver registered");
+    }
+
+    private void checkIfBlocked() {
+        if (receiverId == null) {
+            Log.e("ChatActivity", "Cannot check block status: receiverId is null");
+            return;
+        }
+
+        Log.d("ChatActivity", "Checking block status for receiverId: " + receiverId);
+        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
+        apiService.isUserBlocked(receiverId).enqueue(new Callback<Boolean>() {
+            @Override
+            public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                Log.d("ChatActivity", "Block status check response: " + response.code());
+                if (response.isSuccessful() && response.body() != null) {
+                    boolean isBlocked = response.body();
+                    Log.d("ChatActivity", "Is blocked: " + isBlocked);
+                    updateBlockedUI(isBlocked);
+                } else {
+                    Log.e("ChatActivity", "Failed to get block status: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Boolean> call, Throwable t) {
+                Log.e("ChatActivity", "Failed to check block status", t);
+            }
+        });
+    }
+
+    private void updateBlockedUI(boolean isBlocked) {
+        Log.d("ChatActivity", "Updating UI for blocked status: " + isBlocked);
+        isBlockedByUser = isBlocked;
+
+        runOnUiThread(() -> {
+            if (messageInputLayout != null && blockedMessageLayout != null) {
+                messageInputLayout.setVisibility(isBlocked ? View.GONE : View.VISIBLE);
+                blockedMessageLayout.setVisibility(isBlocked ? View.VISIBLE : View.GONE);
+                Log.d("ChatActivity", "UI updated - Input visibility: " +
+                        (isBlocked ? "GONE" : "VISIBLE") +
+                        ", Blocked message visibility: " +
+                        (isBlocked ? "VISIBLE" : "GONE"));
+            } else {
+                Log.e("ChatActivity", "Views are null - messageInputLayout: " +
+                        (messageInputLayout == null) +
+                        ", blockedMessageLayout: " +
+                        (blockedMessageLayout == null));
+            }
+        });
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (blockStatusReceiver != null) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(blockStatusReceiver);
+        }
         if (webSocket != null) {
             webSocket.close();
         }
@@ -257,8 +493,9 @@ public class ChatActivity extends AppCompatActivity implements WebSocketConfig.W
     @Override
     protected void onResume() {
         super.onResume();
-        if (currentUser != null) {
-            webSocket = new WebSocketConfig(this);
+        // Check block status when returning to activity
+        checkBlockStatus();
+        if (currentUser != null && webSocket != null) {
             webSocket.connectAndSubscribe(currentUser);
         }
     }

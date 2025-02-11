@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/white">
+    android:orientation="vertical">
 
-    <!-- Top Bar -->
+    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -16,19 +16,21 @@
             android:id="@+id/backIcon"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_back" />
+            android:src="@drawable/ic_back"/>
 
         <TextView
+            android:id="@+id/titleTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Create Group Chat"
-            android:textSize="18sp"
-            android:textColor="@color/black"
-            android:layout_marginStart="16dp"/>
+            android:layout_marginStart="16dp"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:text="Create Group"/>
+
     </LinearLayout>
 
-    <!-- Search Box -->
+    <!-- Search -->
     <EditText
         android:id="@+id/searchInput"
         android:layout_width="match_parent"
@@ -36,25 +38,22 @@
         android:layout_margin="16dp"
         android:padding="12dp"
         android:hint="Search users..."
-        android:background="@drawable/search_background"
-        android:inputType="text"
-        android:imeOptions="actionSearch"/>
+        android:background="@drawable/search_background"/>
 
     <!-- User List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/userList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp"/>
+        android:layout_weight="1"/>
 
-    <!-- Create Button -->
+    <!-- Action Button -->
     <Button
         android:id="@+id/createGroupButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Create Group"
-        android:enabled="false"
-        android:layout_margin="16dp"/>
+        android:layout_margin="16dp"
+        android:text="Create"
+        android:textAllCaps="false"/>
 
 </LinearLayout>

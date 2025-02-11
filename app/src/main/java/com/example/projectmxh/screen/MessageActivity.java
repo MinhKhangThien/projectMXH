@@ -47,15 +47,15 @@ public class MessageActivity extends AppCompatActivity implements MessageReadRec
     private ImageView logoIcon;
     private BroadcastReceiver messageReadReceiver;
 
+    private boolean isInitialLoad = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.messages);
 
-
         messagesList = findViewById(R.id.messages_list);
         chatBoxes = new ArrayList<>();
-
         messageAdapter = new MessageAdapter(chatBoxes);
         messagesList.setLayoutManager(new LinearLayoutManager(this));
         messagesList.setAdapter(messageAdapter);
@@ -69,8 +69,8 @@ public class MessageActivity extends AppCompatActivity implements MessageReadRec
             startActivity(intent);
         });
 
+        // Initial load of chats
         loadBoxChats();
-
         registerMessageReceiver();
     }
 
@@ -82,14 +82,14 @@ public class MessageActivity extends AppCompatActivity implements MessageReadRec
     }
 
     private void loadBoxChats() {
-        chatBoxes.clear(); // Clear existing chats
+        chatBoxes.clear();
+        Log.d("MessageActivity", "Cleared existing chat boxes. Size: " + chatBoxes.size());
 
         ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
         apiService.getChatList().enqueue(new Callback<List<ChatList>>() {
             @Override
             public void onResponse(Call<List<ChatList>> call, Response<List<ChatList>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    // Create a HashSet to track unique usernames
                     Set<String> addedUsernames = new HashSet<>();
 
                     for (ChatList chat : response.body()) {
@@ -98,7 +98,7 @@ public class MessageActivity extends AppCompatActivity implements MessageReadRec
                                 !addedUsernames.contains(contact.getUsername())) {
 
                             ChatBox chatBox = new ChatBox(
-                                    contact.getId(),
+                                    null,
                                     contact.getDisplayName(),
                                     contact.getUsername(),
                                     contact.getProfilePicture(),
@@ -107,26 +107,25 @@ public class MessageActivity extends AppCompatActivity implements MessageReadRec
                             );
                             chatBox.setUnreadCount(chat.getUnreadCount());
                             chatBoxes.add(chatBox);
-
-                            // Add username to tracked set
                             addedUsernames.add(contact.getUsername());
-                            Log.d("MessageActivity", "Added chat for user: " + contact.getUsername());
+                            Log.d("MessageActivity", "Added chat box for: " + contact.getUsername());
                         }
                     }
-                    messageAdapter.notifyDataSetChanged();
-                    // Load group chats after private chats are loaded
+                    // Only load group chats after private chats are loaded
                     loadGroupChats();
+                } else {
+                    Log.e("MessageActivity", "Failed to load chat list: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<List<ChatList>> call, Throwable t) {
                 Log.e("MessageActivity", "Failed to load chat list", t);
-                Toast.makeText(MessageActivity.this,
-                        "Error loading chats", Toast.LENGTH_SHORT).show();
             }
         });
     }
+
+// Remove the loadFollowings method since it's no longer needed
 
     private void loadGroupChats() {
         ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
@@ -134,83 +133,37 @@ public class MessageActivity extends AppCompatActivity implements MessageReadRec
             @Override
             public void onResponse(Call<List<GroupChat>> call, Response<List<GroupChat>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Log.d("MessageActivity", "Loaded " + response.body().size() + " group chats");
-                    for (GroupChat group : response.body()) {
-                        if (group != null && group.getId() != null) {
-                            // Check if group chat already exists using safe null checks
-                            boolean exists = false;
-                            for (ChatBox existing : chatBoxes) {
-                                if (existing != null &&
-                                        existing.getId() != null &&
-                                        existing.getId().equals(group.getId())) {
-                                    exists = true;
-                                    break;
-                                }
-                            }
+                    Set<String> addedGroupIds = new HashSet<>();
 
-                            if (!exists) {
-                                ChatBox chatBox = new ChatBox(
-                                        group.getId(),
-                                        group.getName() != null ? group.getName() : "Unnamed Group",
-                                        null,
-                                        group.getImage() != null ? group.getImage() : "",
-                                        true,
-                                        "Group Chat"
-                                );
-                                chatBoxes.add(chatBox);
-                                Log.d("MessageActivity", "Added group chat: " + chatBox.getName());
-                            }
-                        } else {
-                            Log.w("MessageActivity", "Received null or invalid group chat data");
+                    for (GroupChat group : response.body()) {
+                        if (group != null && group.getId() != null &&
+                                !addedGroupIds.contains(group.getId())) {
+
+                            ChatBox chatBox = new ChatBox(
+                                    group.getId(),
+                                    group.getName() != null ? group.getName() : "Unnamed Group",
+                                    null,
+                                    group.getImage() != null ? group.getImage() : "",
+                                    true,
+                                    "Group Chat"
+                            );
+                            chatBoxes.add(chatBox);
+                            addedGroupIds.add(group.getId());
+                            Log.d("MessageActivity", "Added group chat: " + chatBox.getName());
                         }
                     }
                     messageAdapter.notifyDataSetChanged();
-                } else {
-                    try {
-                        Log.e("MessageActivity", "Failed to load group chats: " +
-                                (response.errorBody() != null ? response.errorBody().string() : "Unknown error"));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
                 }
             }
 
             @Override
             public void onFailure(Call<List<GroupChat>> call, Throwable t) {
                 Log.e("MessageActivity", "Network error loading group chats", t);
-                Toast.makeText(MessageActivity.this,
-                        "Error loading group chats", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void loadFollowings(String userId) {
-        ApiService apiService = ApiClient.getClientWithToken(this).create(ApiService.class);
-        apiService.getFollowings(userId).enqueue(new Callback<List<PendingFollowRequest>>() {
-            @Override
-            public void onResponse(Call<List<PendingFollowRequest>> call, Response<List<PendingFollowRequest>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    for (PendingFollowRequest following : response.body()) {
-                        chatBoxes.add(new ChatBox(
-                                following.getId().toString(),
-                                following.getFullName(),
-                                following.getUserName(),
-                                following.getProfilePicture(),
-                                false,
-                                "Click to start chatting"
-                        ));
-                    }
-                    messageAdapter.notifyDataSetChanged();
-                }
-            }
 
-            @Override
-            public void onFailure(Call<List<PendingFollowRequest>> call, Throwable t) {
-                Log.e("MessageActivity", "Failed to load followings: " + t.getMessage());
-                Toast.makeText(MessageActivity.this, "Error loading chat list", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 
     private void showPopupMenu(View view) {
         android.widget.PopupMenu popup = new android.widget.PopupMenu(this, view);
@@ -230,8 +183,10 @@ public class MessageActivity extends AppCompatActivity implements MessageReadRec
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh chat list when activity resumes
-        loadBoxChats();
+        if (!isInitialLoad) {
+            loadBoxChats(); // Only reload if not initial load
+        }
+        isInitialLoad = false;
     }
 
     private void updateUnreadCount(String contactUsername) {

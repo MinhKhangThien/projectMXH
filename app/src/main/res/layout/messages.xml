@@ -28,7 +28,7 @@
             android:id="@+id/socialText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Social"
+            android:text="Chat"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/black"
@@ -44,7 +44,7 @@
             android:id="@+id/messageIcon"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/ic_send"
+            android:src="@drawable/ic_write"
             android:contentDescription="Message Icon" />
     </LinearLayout>
 
@@ -76,46 +76,46 @@
             android:textColor="@color/black" />
     </LinearLayout>
 
-    <!-- Thanh điều hướng giữa Chat và Group Chat -->
-    <LinearLayout
-        android:id="@+id/navigation_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/new_message"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:padding="8dp">
+<!--    &lt;!&ndash; Thanh điều hướng giữa Chat và Group Chat &ndash;&gt;-->
+<!--    <LinearLayout-->
+<!--        android:id="@+id/navigation_bar"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_below="@id/new_message"-->
+<!--        android:layout_marginTop="16dp"-->
+<!--        android:orientation="horizontal"-->
+<!--        android:gravity="center"-->
+<!--        android:padding="8dp">-->
 
-        <Button
-            android:id="@+id/btn_chat"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Chat"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:backgroundTint="@color/white"
-            android:textColor="@color/black" />
+<!--        <Button-->
+<!--            android:id="@+id/btn_chat"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1"-->
+<!--            android:text="Chat"-->
+<!--            android:textSize="16sp"-->
+<!--            android:textStyle="bold"-->
+<!--            android:backgroundTint="@color/white"-->
+<!--            android:textColor="@color/black" />-->
 
-        <Button
-            android:id="@+id/btn_group_chat"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Group Chat"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:backgroundTint="@color/white"
-            android:textColor="@color/black" />
-    </LinearLayout>
+<!--        <Button-->
+<!--            android:id="@+id/btn_group_chat"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1"-->
+<!--            android:text="Group Chat"-->
+<!--            android:textSize="16sp"-->
+<!--            android:textStyle="bold"-->
+<!--            android:backgroundTint="@color/white"-->
+<!--            android:textColor="@color/black" />-->
+<!--    </LinearLayout>-->
 
     <!-- Danh sách tin nhắn -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/messages_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/navigation_bar"
+        android:layout_below="@id/new_message"
         android:layout_marginTop="8dp"
         android:clipToPadding="false"
         android:padding="8dp" />

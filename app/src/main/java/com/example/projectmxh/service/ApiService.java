@@ -10,6 +10,7 @@ import com.example.projectmxh.dto.AppUserDto;
 import com.example.projectmxh.dto.GroupChatDto;
 import com.example.projectmxh.dto.NotificationUserResponseDto;
 import com.example.projectmxh.dto.PageData;
+import com.example.projectmxh.dto.ReportDTO;
 import com.example.projectmxh.dto.request.CommentRequest;
 import com.example.projectmxh.dto.request.CreatePostRequest;
 import com.example.projectmxh.dto.request.LoginRequest;
@@ -18,6 +19,7 @@ import com.example.projectmxh.dto.request.RegisterRequest;
 import com.example.projectmxh.dto.response.CloudinaryResponse;
 import com.example.projectmxh.dto.response.LoginResponse;
 import com.example.projectmxh.Model.Post;
+import com.example.projectmxh.dto.response.ReportResponse;
 import com.example.projectmxh.enums.FollowStatus;
 
 import java.util.List;
@@ -62,6 +64,18 @@ public interface ApiService {
     @PUT("/api/v1/user/{id}/{type}")
     Call<Void> changeAccountType(@Path("id") String userId, @Path("type") String accountType);
 
+    @GET("/api/v1/user/banned")
+    Call<List<AppUserDto>> getBannedUsers();
+
+    @GET("/api/v1/user/active")
+    Call<List<AppUserDto>> getActiveUsers();
+
+    @PUT("/api/v1/user/ban/batch")
+    Call<Void> batchUpdateUserBanStatus(
+            @Query("ban") Boolean ban,
+            @Body List<String> userIds
+    );
+
 
     //post
     @GET("/api/v1/post/posts/{userId}")
@@ -71,7 +85,7 @@ public interface ApiService {
     Call<Post> getPostById(@Path("postId") String postId);
 
     @POST("/api/v1/post")
-    Call<String> createPost(@Body CreatePostRequest createPostRequest);
+    Call<Void> createPost(@Body CreatePostRequest createPostRequest);
 
     @GET("/api/v1/timeline")
     Call<List<Post>> getTimeline();
@@ -168,16 +182,33 @@ public interface ApiService {
     Call<List<AppUserDto>> getGroupChatUsers(@Path("groupId") String groupId);
 
     @POST("/api/v1/chat/add-user-to-group-chat")
-    Call<String> addUserToGroupChat(
+    Call<Void> addUserToGroupChat(
             @Query("groupId") String groupId,
             @Query("userId") String userId
     );
 
     @POST("/api/v1/chat/remove-user-from-group-chat")
-    Call<String> removeUserFromGroupChat(
+    Call<Void> removeUserFromGroupChat(
             @Query("groupId") String groupId,
             @Query("userId") String userId
     );
+
+    @GET("/api/v1/chat/{groupId}/host")
+    Call<String> getGroupHost(@Path("groupId") String groupId);
+
+
+    // Blacklist
+    @POST("/api/v1/blacklist/block/{blockedUserId}")
+    Call<Void> blockUser(@Path("blockedUserId") String blockedUserId);
+
+    @DELETE("/api/v1/blacklist/unblock/{blockedUserId}")
+    Call<Void> unblockUser(@Path("blockedUserId") String blockedUserId);
+
+    @GET("/api/v1/blacklist/isBlockedByUser/{blockedUserId}")
+    Call<Boolean> isUserBlocked(@Path("blockedUserId") String blockedUserId);
+
+    @GET("/api/v1/blacklist/isBlocked/{blockedUserId}")
+    Call<Boolean> isBlockedUser(@Path("blockedUserId") String blockedUserId);
 
 
     // Follow
@@ -216,6 +247,32 @@ public interface ApiService {
             @Query("pageSize") int pageSize,
             @Query("isRead") Boolean isRead
     );
+
+
+    //Report
+
+    @POST("/api/v1/reports/submit")
+    Call<ReportResponse> submitReport(
+            @Body ReportDTO reportDTO,
+            @Query("reporterId") String reporterId
+    );
+
+    @GET("/api/v1/reports/all")
+    Call<PageData<ReportResponse>> getAllReports(
+            @Query("page") int page,
+            @Query("size") int size,
+            @Query("status") String status
+    );
+
+    @POST("/api/v1/reports/review/{reportId}")
+    Call<ReportResponse> reviewReport(
+            @Path("reportId") String reportId,
+            @Query("adminId") String adminId,
+            @Query("status") String status,
+            @Query("resolution") String resolution
+    );
+
+
 
     // For Cloudinary upload (if needed)
     @Multipart

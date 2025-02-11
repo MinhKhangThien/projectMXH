@@ -84,6 +84,45 @@
         app:layout_constraintBottom_toTopOf="@id/messageInput"
         android:padding="8dp" />
 
+    <LinearLayout
+        android:id="@+id/blockedMessageLayout"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:visibility="gone"
+        android:background="@color/gray"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="You have been blocked by this user"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/youBlockedMessageLayout"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:visibility="gone"
+        android:background="@color/light_gray"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Unblock this user to send messages"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="14sp"/>
+    </LinearLayout>
+
     <!-- Khung nhập tin nhắn -->
     <LinearLayout
         android:id="@+id/messageInput"

@@ -46,8 +46,6 @@ public class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public int getItemViewType(int position) {
         Message message = messages.get(position);
         boolean isSentByMe = message.getSenderName().equals(currentUser);
-        Log.d("GroupChatAdapter", String.format("Message sender: %s, current user: %s, is sent by me: %b",
-                message.getSenderName(), currentUser, isSentByMe));
         return isSentByMe ? VIEW_TYPE_SENT : VIEW_TYPE_RECEIVED;
     }
 
@@ -67,8 +65,6 @@ public class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @Override
     public void onBindViewHolder(RecyclerView.@NonNull ViewHolder holder, int position) {
         Message message = messages.get(position);
-        Log.d("GroupChatAdapter", String.format("Binding message - sender: %s, current user: %s",
-                message.getSenderName(), currentUser));
 
         if (getItemViewType(position) == VIEW_TYPE_SENT) {
             ((SentMessageViewHolder) holder).bind(message);

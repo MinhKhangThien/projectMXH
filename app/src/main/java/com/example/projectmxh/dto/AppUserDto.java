@@ -1,13 +1,9 @@
 package com.example.projectmxh.dto;
 
 import com.example.projectmxh.enums.AccountType;
+import com.example.projectmxh.enums.RoleType;
 
-import java.util.UUID;
-
-enum RoleType {
-    USER,
-    ADMIN
-}
+import java.util.Objects;
 
 public class AppUserDto {
     private String id;
@@ -18,6 +14,7 @@ public class AppUserDto {
     private RoleType role;
     private String profilePicture;
     private AccountType accountType = AccountType.PUBLIC;
+    private Boolean isBanned;
 
 
     public AppUserDto(String id, String username, String bio, String gender, String displayName, RoleType role, String profilePicture, AccountType accountType) {
@@ -93,5 +90,26 @@ public class AppUserDto {
 
     public void setAccountType(AccountType accountType) {
         this.accountType = accountType;
+    }
+
+    public Boolean getIsBanned() {
+        return isBanned;
+    }
+
+    public void setIsBanned(Boolean banned) {
+        isBanned = banned;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AppUserDto that = (AppUserDto) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

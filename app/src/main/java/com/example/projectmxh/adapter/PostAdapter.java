@@ -9,15 +9,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.projectmxh.Model.Post;
 import com.example.projectmxh.R;
+import com.example.projectmxh.screen.ReportDialog;
 import com.example.projectmxh.service.ApiClient;
 import com.example.projectmxh.service.ApiService;
 import com.google.android.material.button.MaterialButton;
@@ -128,9 +131,23 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             moreButton.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
-                    listener.onMoreClick(posts.get(position), position);
+                    PopupMenu popup = new PopupMenu(context, v);
+                    popup.inflate(R.menu.menu_post_options);
+                    popup.setOnMenuItemClickListener(item -> {
+                        if (item.getItemId() == R.id.action_report) {
+                            showReportDialog(posts.get(position));
+                            return true;
+                        }
+                        return false;
+                    });
+                    popup.show();
                 }
             });
+        }
+
+        private void showReportDialog(Post post) {
+            ReportDialog dialog = ReportDialog.newInstance(post);
+            dialog.show(((AppCompatActivity) context).getSupportFragmentManager(), "ReportDialog");
         }
 
         void bind(Post post) {

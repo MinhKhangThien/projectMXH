@@ -1,6 +1,7 @@
 package com.example.projectmxh;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,6 +14,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
@@ -62,12 +65,13 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
     private ActivityResultLauncher<Intent> createPostLauncher;
     private View loadingView;
     private View errorView;
-    private MaterialButton retryButton;
     private EditText searchBar;
     private RecyclerView searchResultsList;
     private SearchResultAdapter searchAdapter;
     private List<AppUserDto> searchResults;
     private ImageView messageButton;
+    private View emptyStateView;
+    private Button findUsersButton;
 
     private static final int CREATE_POST_REQUEST = 100;
 
@@ -106,6 +110,11 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
         messageButton = view.findViewById(R.id.messageButton);
         messageButton.setOnClickListener(v -> navigateToMessages());
 
+        // Initialize empty state view
+        emptyStateView = view.findViewById(R.id.emptyStateView);
+        findUsersButton = view.findViewById(R.id.findUsersButton);
+        findUsersButton.setOnClickListener(v -> navigateToSearch());
+
         // Initialize RecyclerView
         postsRecyclerView = view.findViewById(R.id.postsRecyclerView);
         posts = new ArrayList<>();
@@ -123,7 +132,6 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
         // Initialize state views
         loadingView = view.findViewById(R.id.loadingView);
         errorView = view.findViewById(R.id.errorView);
-        retryButton = view.findViewById(R.id.retryButton);
 
         searchBar = view.findViewById(R.id.searchBar);
         searchResultsList = view.findViewById(R.id.searchResultsList);
@@ -157,6 +165,13 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
     private void navigateToMessages() {
         Intent intent = new Intent(getContext(), MessageActivity.class);
         startActivity(intent);
+    }
+
+    private void navigateToSearch() {
+        // Focus on search bar and show keyboard
+        searchBar.requestFocus();
+        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(searchBar, InputMethodManager.SHOW_IMPLICIT);
     }
 
     private void setupSearchBar() {
@@ -268,7 +283,6 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
         swipeRefreshLayout.setOnRefreshListener(this::loadTimeline);
         swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright);
 
-        retryButton.setOnClickListener(v -> loadTimeline());
     }
 
     private void loadTimeline() {
@@ -280,25 +294,29 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
             public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
                 swipeRefreshLayout.setRefreshing(false);
                 if (response.isSuccessful() && response.body() != null) {
-                    showContent();
                     posts.clear();
                     posts.addAll(response.body());
 
-                    // Update like counts for each post
-                    for (int i = 0; i < posts.size(); i++) {
-                        final int position = i;
-                        updateLikeCount(posts.get(i), position);
+                    if (posts.isEmpty()) {
+                        showEmptyState();
+                    } else {
+                        showContent();
+                        // Update like counts for each post
+                        for (int i = 0; i < posts.size(); i++) {
+                            final int position = i;
+                            updateLikeCount(posts.get(i), position);
+                        }
+                        checkLikeStatusForPosts();
                     }
-                    checkLikeStatusForPosts();
                 } else {
-                    showError();
+                    showEmptyState();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Post>> call, Throwable t) {
                 swipeRefreshLayout.setRefreshing(false);
-                showError();
+                showEmptyState();
             }
         });
     }
@@ -412,19 +430,20 @@ public class HomeFragment extends Fragment implements PostAdapter.PostClickListe
 
     private void showLoading() {
         loadingView.setVisibility(View.VISIBLE);
-        errorView.setVisibility(View.GONE);
+        emptyStateView.setVisibility(View.GONE);
         postsRecyclerView.setVisibility(View.GONE);
-    }
-
-    private void hideLoading() {
-        loadingView.setVisibility(View.GONE);
-        swipeRefreshLayout.setRefreshing(false);
     }
 
     private void showContent() {
         loadingView.setVisibility(View.GONE);
-        errorView.setVisibility(View.GONE);
+        emptyStateView.setVisibility(View.GONE);
         postsRecyclerView.setVisibility(View.VISIBLE);
+    }
+
+    private void showEmptyState() {
+        loadingView.setVisibility(View.GONE);
+        emptyStateView.setVisibility(View.VISIBLE);
+        postsRecyclerView.setVisibility(View.GONE);
     }
 
     private void showError() {

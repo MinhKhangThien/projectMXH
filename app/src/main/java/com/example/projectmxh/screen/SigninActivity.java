@@ -13,6 +13,9 @@ import android.widget.Toast;
 
 import com.example.projectmxh.BaseActivity;
 import com.example.projectmxh.R;
+import com.example.projectmxh.admin.AdminBaseActivity;
+import com.example.projectmxh.dto.AppUserDto;
+import com.example.projectmxh.enums.RoleType;
 import com.example.projectmxh.dto.request.LoginRequest;
 import com.example.projectmxh.dto.response.LoginResponse;
 import com.example.projectmxh.service.ApiClient;
@@ -75,38 +78,102 @@ public class SigninActivity extends AppCompatActivity {
     }
 
     private void performLogin(String email, String password) {
-        // Gọi API login
         LoginRequest loginRequest = new LoginRequest(email, password);
 
         apiService.login(loginRequest).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    // Đăng nhập thành công
                     String token = response.body().getToken();
 
-                    // Lưu token vào SharedPreferences
+                    // Save token temporarily
                     getSharedPreferences("app_prefs", MODE_PRIVATE)
                             .edit()
                             .putString("auth_token", token)
                             .apply();
 
-                    Toast.makeText(SigninActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                    // Check if user is banned
+                    ApiService authenticatedApi = ApiClient.getClientWithToken(SigninActivity.this)
+                            .create(ApiService.class);
 
-                    // Chuyển sang BaseActivity
-                    Intent intent = new Intent(SigninActivity.this, BaseActivity.class);
-                    startActivity(intent);
-                    finish();
+                    authenticatedApi.getMe().enqueue(new Callback<AppUserDto>() {
+                        @Override
+                        public void onResponse(Call<AppUserDto> call, Response<AppUserDto> response) {
+                            if (response.isSuccessful() && response.body() != null) {
+                                AppUserDto user = response.body();
+
+                                // Check if user is banned
+                                if (user.getIsBanned() != null && user.getIsBanned()) {
+                                    // Remove the temporarily saved token
+                                    getSharedPreferences("app_prefs", MODE_PRIVATE)
+                                            .edit()
+                                            .remove("auth_token")
+                                            .apply();
+
+                                    Toast.makeText(SigninActivity.this,
+                                            "Your account has been banned. Please contact administrator.",
+                                            Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+
+                                RoleType userRole = user.getRole();
+
+                                // Save user role and proceed with login
+                                getSharedPreferences("app_prefs", MODE_PRIVATE)
+                                        .edit()
+                                        .putString("user_role", userRole.name())
+                                        .apply();
+
+                                Toast.makeText(SigninActivity.this,
+                                        "Login successful!", Toast.LENGTH_SHORT).show();
+
+                                // Navigate based on role
+                                if (userRole == RoleType.ADMIN) {
+                                    Intent intent = new Intent(SigninActivity.this,
+                                            AdminBaseActivity.class);
+                                    startActivity(intent);
+                                } else {
+                                    Intent intent = new Intent(SigninActivity.this,
+                                            BaseActivity.class);
+                                    startActivity(intent);
+                                }
+                                finish();
+                            } else {
+                                // Remove the temporarily saved token
+                                getSharedPreferences("app_prefs", MODE_PRIVATE)
+                                        .edit()
+                                        .remove("auth_token")
+                                        .apply();
+
+                                Toast.makeText(SigninActivity.this,
+                                        "Failed to get user info", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<AppUserDto> call, Throwable t) {
+                            // Remove the temporarily saved token
+                            getSharedPreferences("app_prefs", MODE_PRIVATE)
+                                    .edit()
+                                    .remove("auth_token")
+                                    .apply();
+
+                            Toast.makeText(SigninActivity.this,
+                                    "Network error: " + t.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 } else {
-                    // Xử lý lỗi từ server
-                    Toast.makeText(SigninActivity.this, "Login Failed!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SigninActivity.this,
+                            "Login Failed! Invalid credentials.", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {
-                // Xử lý lỗi kết nối
-                Toast.makeText(SigninActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(SigninActivity.this,
+                        "Network error: " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }

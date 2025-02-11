@@ -30,10 +30,6 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public int getItemViewType(int position) {
         Message message = messages.get(position);
-        Log.d("ChatAdapter", String.format("getItemViewType - message sender: %s, current user: %s, equals: %b",
-                message.getSenderName(),
-                currentUser,
-                message.getSenderName().equals(currentUser)));
 
         return message.getSenderName().equals(currentUser) ? VIEW_TYPE_SENT : VIEW_TYPE_RECEIVED;
     }
@@ -56,9 +52,6 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message message = messages.get(position);
-        Log.d("ChatAdapter", "Binding message: " + message.getMessage() +
-                " at position: " + position +
-                " with type: " + getItemViewType(position));
 
         if (holder instanceof SentMessageViewHolder) {
             ((SentMessageViewHolder) holder).bind(message);

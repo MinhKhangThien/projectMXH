@@ -91,7 +91,23 @@ public class OtherProfileFragment extends Fragment {
         backButton = view.findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> {
             if (getActivity() != null) {
-                getActivity().getSupportFragmentManager().popBackStack();
+                // Check if we came from chat
+                boolean fromChat = getActivity().getIntent().getBooleanExtra("fromChat", false);
+                if (fromChat) {
+                    // Return to ChatActivity
+                    Intent intent = new Intent(getActivity(), ChatActivity.class);
+                    // Add necessary flags to handle the back stack
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    getActivity().finish();
+                } else {
+                    // Normal back navigation within BaseActivity
+                    if (getActivity().getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                        getActivity().getSupportFragmentManager().popBackStack();
+                    } else {
+                        getActivity().onBackPressed();
+                    }
+                }
             }
         });
 

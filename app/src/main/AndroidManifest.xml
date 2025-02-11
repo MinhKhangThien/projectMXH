@@ -106,6 +106,18 @@
             android:exported="false"
             android:theme="@style/Theme.AppCompat"/>
 
+        <activity
+            android:name=".screen.GroupChatDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".screen.UserSelectionActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".admin.AdminBaseActivity"
+            android:exported="false"/>
+
         <receiver
             android:name=".Components.MessageReadReceiver"
             android:exported="false">

@@ -4,6 +4,7 @@ public class GroupChatDto {
     private String id;
     private String name;
     private String image;
+    private AppUserDto host;
     //private LocalDateTime createdAt;
 
     public GroupChatDto(String id, String name, String image) {
@@ -34,5 +35,13 @@ public class GroupChatDto {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public AppUserDto getHost() {
+        return host;
+    }
+
+    public void setHost(AppUserDto host) {
+        this.host = host;
     }
 }
